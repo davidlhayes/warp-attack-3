@@ -1,0 +1,305 @@
+// Variables
+@titleFont: 'Share', sans-serif;
+@titleColor: rgb(240,207,61);
+@messageFont: 'Courier', sans-serif;
+@messageFontSize: 10px;
+@buttonColor: rgba(118, 125, 117, 1);
+@buttonFontColor: rgba(255,255,255, 1);
+@buttonFont: 'Arial Black', sans-serif;
+@setButtonFontSize: 8px;
+@boardGridColor: rgba(74, 255, 0, 1);
+@trayGridColor: rgba(255, 145, 0, 1);
+@tokenNumberColor: rgba(240, 207, 61,.75);
+@battleBorderColor: rgba(240,207,61,1);
+@invisible: rgba(255,255,255,0);
+@alertFontColor: rgba(0, 255, 224, 1);
+@cellHighlightColor: rgba(255,255,255,.8);
+
+// Bootstrap replacements
+* {
+  box-sizing:border-box;
+}
+.row {
+  width: 100%;
+}
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  // background-color: rgb(100,100,100);
+  background: url('../assets/images/hubble-space-wallpapers.jpg');
+  background-size: 100%;
+  text-align: center;
+}
+.login {
+  margin-left: 180px;
+  width: 750px;
+  height: 600px;
+  position: relative;
+  display: block;
+}
+.tray-col, .button-col, .board-col, .login-col {
+  position: relative;
+  float: left;
+}
+.tray-col {
+  width: 215px;
+}
+.left {
+  margin-left: 26px;
+}
+.button-col {
+  width: 55px;
+  margin: 0 auto;
+}
+.vertical {
+  width: 45px;
+  height:50px;
+  margin-left: 5px;
+  border: solid 1px @titleColor;
+  background-color: @buttonColor;
+  // border-radius: 12px;
+  float: left;
+  margin-bottom: 15px;
+  font-family: @buttonFont;
+  font-size: @setButtonFontSize;
+  color: @buttonFontColor;
+}
+.vertical:first-child {
+  margin-top: 150px;
+}
+.vertical:hover {
+  color: darken(@buttonFontColor, 20%);
+}
+
+.board-col {
+  width: 510px;
+}
+
+.wrapper {
+  width: 1100px;
+  height: 1000px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin-top: -20px;
+  margin-bottom: 15px;
+  color: @titleColor;
+  font-family: @titleFont;
+  font-size: 8rem;
+  font-weight: 700;
+  font-style: italic;
+  text-align: center;
+}
+.main {
+    border: 2px solid @invisible;
+    height: 654px;
+    width: 504px;
+    margin: 0 auto;
+}
+.tray {
+    border: 2px solid @invisible;
+    height: 654px;
+    width: 204px;
+    margin: 0 auto;
+}
+.battle {
+    border: 2px solid @battleBorderColor;
+}
+.cell {
+  float: left;
+  width: 50px;
+  height: 65px;
+  padding-top: 2px;
+  :hover {
+    background-color: rgba(0,0,0,.65);
+    cursor: pointer;
+  }
+}
+// main board cell borders
+.board-cell {
+  border-left: solid 1px @boardGridColor;
+  border-top: solid 1px @boardGridColor;
+}
+.board-cell:nth-child(10n+0) {
+  border-right: solid 1px @boardGridColor;
+}
+.board-cell:nth-last-child(-n+10) {
+  border-bottom: solid 1px @boardGridColor;
+}
+// tray cell borders
+.tray-cell {
+  border-left: solid 1px @trayGridColor;
+  border-top: solid 1px @trayGridColor;
+}
+.tray-cell:nth-child(4n+0) {
+  border-right: solid 1px @trayGridColor;
+}
+.tray-cell:nth-child(n+37) {
+  border-bottom: solid 1px @trayGridColor;
+}
+
+.token {
+  width: 45px;
+  height: 60px;
+  margin: 0 auto;
+  background-size: cover;
+  text-align: right;
+  font-family: arial;
+  font-size: 18px;
+  padding-top: 2px;
+  padding-right: 2px;
+  color: rgba(240, 207, 61,.75);
+
+}
+.active {
+  background-color: @cellHighlightColor;
+}
+// flags for login-screen
+#blue-flag {
+  background-image: url('../assets/images/blue-flag.png');
+  width: 300px;
+  height: 300px;
+  background-size: cover;
+}
+#red-flag {
+  background-image: url('../assets/images/red-flag.png');
+  width: 300px;
+  height: 300px;
+  background-size: cover;
+}
+#blue-button-col {
+  float: left;
+}
+#red-button-col {
+  float: right;
+}
+// VS for login-screen
+#middle {
+  margin-top: 100px;
+  font-size: 7rem;
+  text-align: center;
+  color: @titleColor;
+}
+.flags {
+  position: relative;
+  width: 750px;
+  height: 350px;
+}
+.buttons {
+  position: relative;
+  margin-left: 100px;
+  width: 535px;
+  height: 200px;
+  h3 {
+    color: @alertFontColor;
+  }
+}
+.controls {
+  p {
+    color: white;
+  }
+}
+// blue tokens
+.b1 {
+  background-image: url('../assets/images/b1-small.png');
+}
+.b2 {
+  background-image: url('../assets/images/b2-small.png');
+}
+.b3 {
+  background-image: url('../assets/images/b3-small.png');
+}
+.b4 {
+  background-image: url('../assets/images/b4-small.png');
+}
+.b5 {
+  background-image: url('../assets/images/b5-small.png');
+}
+.b6 {
+  background-image: url('../assets/images/b6-small.png');
+}
+.b7 {
+  background-image: url('../assets/images/b7-small.png');
+}
+.b8 {
+  background-image: url('../assets/images/b8-small.png');
+}
+.b9 {
+  background-image: url('../assets/images/b9-small.png');
+}
+.bm {
+  background-image: url('../assets/images/bm-small.png');
+}
+.bs {
+  background-image: url('../assets/images/bs-small.png');
+}
+.bf {
+  background-image: url('../assets/images/bf-small.png');
+}
+.bback {
+  background-image: url('../assets/images/bback-small.png');
+  color: rgba(0,0,0,0);
+}
+// red tokens
+.r1 {
+  background-image: url('../assets/images/r1-small.png');
+}
+.r2 {
+  background-image: url('../assets/images/r2-small.png');
+}
+.r3 {
+  background-image: url('../assets/images/r3-small.png');
+}
+.r4 {
+  background-image: url('../assets/images/r4-small.png');
+}
+.r5 {
+  background-image: url('../assets/images/r5-small.png');
+}
+.r6 {
+  background-image: url('../assets/images/r6-small.png');
+}
+.r7 {
+  background-image: url('../assets/images/r7-small.png');
+}
+.r8 {
+  background-image: url('../assets/images/r8-small.png');
+}
+.r9 {
+  background-image: url('../assets/images/r9-small.png');
+}
+.rm {
+  background-image: url('../assets/images/rm-small.png');
+}
+.rs {
+  background-image: url('../assets/images/rs-small.png');
+}
+.rf {
+  background-image: url('../assets/images/rf-small.png');
+}
+.rback {
+  background-image: url('../assets/images/rback-small.png');
+  color: rgba(0,0,0,0);
+}
+// star dmz's
+.star-tl {
+  background-image: url('../assets/images/star-tl.png');
+  color: rgba(0,0,0,0);
+}
+.star-tr {
+  background-image: url('../assets/images/star-tr.png');
+  color: rgba(0,0,0,0);
+}
+.star-bl {
+  background-image: url('../assets/images/star-bl.png');
+  color: rgba(0,0,0,0);
+}
+.star-br {
+  background-image: url('../assets/images/star-br.png');
+  color: rgba(0,0,0,0);
+}
+// empty squares
+.empty {
+  color: rgba(0,0,0,0);
+}

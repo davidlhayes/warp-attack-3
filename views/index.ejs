@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html ng-app="warpApp">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css">
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-MfvZlkHCEqatNoGiOXveE8FIwMzZg4W85qfrfIFBfYc= sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous"> -->
+    <link rel="stylesheet" href="/stylesheets/main.css" media="screen" title="no title" charset="utf-8">
+    <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js"></script>
+    <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha256-Sk3nkD6mLTMOF0EOpNtsIry+s1CsaqQC1rVLTAy+0yc= sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script> -->
+    <script type="text/javascript" src="/scripts/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.6/angular-route.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.6/angular-animate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular-resource.min.js"></script>
+    <script src="https://cdn.firebase.com/js/client/2.3.1/firebase.js"></script>
+    <script src="https://cdn.firebase.com/libs/angularfire/1.1.3/angularfire.min.js"></script>
+    <script src="/scripts/angular-app.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Share:400,700italic' rel='stylesheet' type='text/css'>
+    <title>Warp Attack</title>
+  </head>
+  <body ng-controller="BoardCtrl">
+    <div class="wrapper">
+
+      <header>
+        <div id='banner'>
+          <h1>WARP ATTACK</h1>
+        </div>
+      </header>
+      <!-- board row -->
+      <div class="row" ng-show=loggedIn>
+
+        <div class="tray-col left">
+          <div class="tray battle">
+            <div class="tray-cell cell" ng-class="{active : isActive(space)}" ng-repeat="space in leftTray | orderBy: 'row' | orderBy: 'col' "
+              id="r{{space.row}}c{{space.col}}"  ng-click="activate(space,$index)">
+               <div class="token {{space.tokenSpec}}">{{space.tokenSpec.charAt(1).toUpperCase()}}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-col">
+          <button class="vertical" ng-click="setBlueTray()" ng-show=myColor=='blue' >RESET</button>
+          <button class="vertical" ng-click="setBlueField()" ng-show=myColor=='blue'>QUICK SET</button>
+        </div>
+
+        <div class="board-col">
+          <div class="main battle">
+            <div class="board-cell cell" ng-class="{active : isActive(space)}" ng-repeat="space in board | orderBy: colSortOrder | orderBy: rowSortOrder" id="r{{space.row}}c{{space.col}}" ng-click="activate(space,$index)">
+                  <div class="token {{space.tokenSpec}}">{{space.tokenSpec.charAt(1).toUpperCase()}}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-col">
+          <button class="vertical" ng-click="setRedTray()" ng-show=myColor=='red'>RESET</button>
+          <button class="vertical" ng-click="setRedField()" ng-show=myColor=='red'>QUICK SET</button>
+        </div>
+
+        <div class="tray-col">
+          <div class="tray battle">
+            <div class="tray-cell cell" ng-class="{active : isActive(space)}" ng-repeat="space in rightTray  | orderBy: 'row' | orderBy: 'col' " id="r{{space.row}}c{{space.col}}" ng-click="activate(space,$index)">
+               <div class="token {{space.tokenSpec}}">{{space.tokenSpec.charAt(1).toUpperCase()}}</div>
+            </div>
+          </div>
+        </div>
+
+
+
+
+
+      </div> <!-- end board row -->
+
+      <!-- <div class="winner-circle" ng-show=win>
+        <div class="row-win">
+          <div class="win-col">
+            <div class="{{winner}}"></div>
+          </div>
+          <div class="win-col">
+            <div id="middle-win">{{verb}}</div>
+          </div>
+          <div class="win-col">
+            <div class="{{loser}}"></div>
+          </div>
+        </div> -->
+
+      <div class="login" ng-hide=loggedIn ng-controller="PlayerCtrl">
+        <div class="row flags">
+          <div class="login-col">
+            <div id="blue-flag"></div>
+          </div>
+          <div class="login-col">
+            <div id="middle">VS</div>
+          </div>
+          <div class="login-col">
+            <div id="red-flag"></div>
+          </div>
+        </div>
+
+        <div class="row buttons">
+          <div id="blue-button-col">
+            <button ng-hide=bluepresent ng-click=chooseBlue()>Choose Blue</button>
+            <h3 ng-show=bluepresent>WAITING TO<br>PLAY YOU</h3>
+            <button ng-show=bluepresent ng-click=logOutBlue()>Log Out</button>
+          </div>
+          <div id="red-button-col">
+            <button ng-hide=redpresent ng-click=chooseRed()>Choose Red</button>
+            <h3 ng-show=redpresent>WAITING TO<br>PLAY YOU</h3>
+            <button ng-show=redpresent ng-click=logOutRed()>Log Out</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- <div class="controls" ng-controller="PlayerCtrl" ng-show="loggedIn">
+        <p>Turn: {{turn}} Last: Movement: {{movement}}</p>
+      </div> -->
+    </div>
+  </body>
+</html>

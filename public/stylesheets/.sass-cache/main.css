@@ -1,0 +1,102 @@
+body {
+  text-align: center; }
+
+.wrapper {
+  width: 960px;
+  margin: 0 auto; }
+
+table {
+  border-collapse: collapse; }
+  table td {
+    width: 50px;
+    height: 75px; }
+
+#main td {
+  border: solid 1px green; }
+
+#tray td {
+  border: solid 1px orange; }
+
+.table {
+  width: 100%; }
+
+.cell {
+  border-left: solid 1px green;
+  border-top: solid 1px green;
+  float: left;
+  width: 60px;
+  height: 75px; }
+
+.cell:nth-child(10n+0) {
+  border-right: solid 1px green; }
+
+.cell:nth-last-child(-n+10) {
+  border-bottom: solid 1px green; }
+
+.token {
+  width: 56px;
+  height: 73px;
+  margin: 0 auto;
+  background-size: cover; }
+
+#b1 {
+  background-image: url("../assets/images/starship-f-1.png"); }
+
+#b2 {
+  background-image: url("../assets/images/starship-f-2.png"); }
+
+#b3 {
+  background-image: url("../assets/images/starship-f-3.png"); }
+
+#b4 {
+  background-image: url("../assets/images/starship-f-4.png"); }
+
+#b5 {
+  background-image: url("../assets/images/starship-f-5.png"); }
+
+#b6 {
+  background-image: url("../assets/images/starship-f-6.png"); }
+
+#b7 {
+  background-image: url("../assets/images/starship-f-7.png"); }
+
+#b8 {
+  background-image: url("../assets/images/starship-f-8.png"); }
+
+#b9 {
+  background-image: url("../assets/images/starship-f-9.png"); }
+
+#r1 {
+  background-image: url("../assets/images/starship-a-1.png"); }
+
+#r2 {
+  background-image: url("../assets/images/starship-a-2.png"); }
+
+#r3 {
+  background-image: url("../assets/images/starship-a-3.png"); }
+
+#r4 {
+  background-image: url("../assets/images/starship-a-4.png"); }
+
+#r5 {
+  background-image: url("../assets/images/starship-a-5.png"); }
+
+#r6 {
+  background-image: url("../assets/images/starship-a-6.png"); }
+
+#r7 {
+  background-image: url("../assets/images/starship-a-7.png"); }
+
+#r8 {
+  background-image: url("../assets/images/starship-a-8.png"); }
+
+#r9 {
+  background-image: url("../assets/images/starship-a-9.png"); }
+
+.red {
+  background-color: red; }
+
+.blue {
+  background-color: blue; }
+
+/*# sourceMappingURL=main.css.map */

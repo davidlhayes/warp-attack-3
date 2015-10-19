@@ -16,9 +16,9 @@
       if (!((changedCell.row==5 && (changedCell.col==3 || changedCell.col==7))
        || (changedCell.row==5 && (changedCell.col==4 || changedCell.col==8))
        || (changedCell.row==6 && (changedCell.col==3 || changedCell.col==7))
-       || (changedCell.row==6 && (changedCell.col==3 || changedCell.col==8)))) {
+       || (changedCell.row==6 && (changedCell.col==4 || changedCell.col==8)))) {
     //
-    //  console.log('changedCell.row ' + typeof(changedCell.row));
+     console.log('changedCell.row ' + typeof(changedCell.row));
 
     // convert board info and update red
 
@@ -31,7 +31,7 @@
           if (snapshot.val()[key].col == changedCell.col) {
             if (changedCell.color=='blue') {
               color = 'blue';
-              rank = 'back'
+              rank = 'k'
             } else {
               color = changedCell.color;
               rank = changedCell.rank;
@@ -59,7 +59,7 @@
           if (snapshot.val()[key].col == blueCol) {
             if (changedCell.color=='red') {
               color = 'red';
-              rank = 'back';
+              rank = 'k';
             } else {
               color = changedCell.color;
               rank =  changedCell.rank;

@@ -31,9 +31,9 @@
 
         <div class="tray-col left">
           <div class="tray battle">
-            <div class="tray-cell cell" ng-class="{active : isActive(space)}" ng-repeat="space in leftTray | orderBy: 'row' | orderBy: 'col' "
+            <div class="tray-cell cell" ng-class="{active : isActive(space)}" ng-repeat="space in leftTray | orderBy: 'row' | orderBy: 'col' | leftTray"
               id="r{{space.row}}c{{space.col}}"  ng-click="activate(space,$index)">
-               <div class="token {{space.tokenSpec}}">{{space.tokenSpec.charAt(1).toUpperCase()}}</div>
+               <div class="token {{space.color.charAt(0)}}{{space.rank.toString().charAt(0)}}">{{space.rank.toString().charAt(0).toUpperCase()}}</div>
             </div>
           </div>
         </div>
@@ -45,8 +45,8 @@
 
         <div class="board-col">
           <div class="main battle">
-            <div class="board-cell cell" ng-class="{active : isActive(space)}" ng-repeat="space in board | orderBy: colSortOrder | orderBy: rowSortOrder" id="r{{space.row}}c{{space.col}}" ng-click="activate(space,$index)">
-                  <div class="token {{space.tokenSpec}}">{{space.tokenSpec.charAt(1).toUpperCase()}}</div>
+            <div class="board-cell cell" ng-class="{active : isActive(space)}" ng-repeat="space in board | orderBy: colSortOrder | orderBy: rowSortOrder | board" id="r{{space.row}}c{{space.col}}" ng-click="activate(space,$index)">
+                  <div class="token {{space.color.charAt(0)}}{{space.rank.toString().charAt(0)}}">{{space.rank.toString().charAt(0).toUpperCase()}}</div>
             </div>
           </div>
         </div>
@@ -58,8 +58,8 @@
 
         <div class="tray-col">
           <div class="tray battle">
-            <div class="tray-cell cell" ng-class="{active : isActive(space)}" ng-repeat="space in rightTray  | orderBy: 'row' | orderBy: 'col' " id="r{{space.row}}c{{space.col}}" ng-click="activate(space,$index)">
-               <div class="token {{space.tokenSpec}}">{{space.tokenSpec.charAt(1).toUpperCase()}}</div>
+            <div class="tray-cell cell" ng-class="{active : isActive(space)}" ng-repeat="space in rightTray  | orderBy: 'row' | orderBy: 'col' | rightTray" id="r{{space.row}}c{{space.col}}" ng-click="activate(space,$index)">
+               <div class="token {{space.color.charAt(0)}}{{space.rank.toString().charAt(0)}}">{{space.rank.toString().charAt(0).toUpperCase()}}</div>
             </div>
           </div>
         </div>

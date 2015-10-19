@@ -1,4 +1,4 @@
-  var teamColor = '';
+  var teamColor = 'red';
   var loggedIn = false;
   var heartBeat = 0;
   // delcare app
@@ -77,12 +77,60 @@
   }]);
 
   angular.module('warpApp')
-    .controller('BoardCtrl', ['$scope','$http','$rootScope','tokenFactory',
-               'statusService', function($scope,$http,$rootScope,tokenFactory, statusService) {
+    .factory('redFactory', ['$http', '$firebaseArray', function($http,$firebaseArray) {
+      var ref = new Firebase('https://warp-attack-3.firebaseIO.com/red');
+      return $firebaseArray(ref);
+  }]);
 
-      $scope.colSortOrder = 'col';
-      $scope.rowSortOrder = 'row';
-      var activecell = { row: 0, col: 0}
+  angular.module('warpApp')
+    .factory('blueFactory', ['$http', '$firebaseArray', function($http,$firebaseArray) {
+      var ref = new Firebase('https://warp-attack-3.firebaseIO.com/blue');
+      return $firebaseArray(ref);
+  }]);
+
+  app.filter('leftTray', function() {
+    return function(objs) {
+      var filtered = [ ];
+      for (var key in objs) {
+        if (objs[key].row >=11 && objs[key].row<=14) {
+            filtered.push(objs[key]);
+        }
+      }
+      return filtered;
+    }
+  });
+
+  app.filter('board', function() {
+    return function(objs) {
+      var filtered = [ ];
+      for (var key in objs) {
+        if (objs[key].row >=1 && objs[key].row<=10) {
+            filtered.push(objs[key]);
+        }
+      }
+      return filtered;
+    }
+  });
+
+  app.filter('rightTray', function() {
+    return function(objs) {
+      var filtered = [ ];
+      for (var key in objs) {
+        if (objs[key].row >=15 && objs[key].row<=18) {
+            filtered.push(objs[key]);
+        }
+      }
+      return filtered;
+    }
+  });
+
+  angular.module('warpApp')
+    .controller('BoardCtrl', ['$scope','$http','$rootScope', 'tokenFactory', 'redFactory', 'blueFactory',
+               'statusService', function($scope,$http,$rootScope,tokenFactory, redFactory, blueFactory, statusService) {
+      console.log('HELLO WORLD');
+      $scope.colSortOrder = 'parseInt(col)';
+      $scope.rowSortOrder = 'parseInt(row)';
+      var activecell = { row: 0, col: 0};
 
       $scope.getTurn = function() {
         var data = $http.get('/players/turn').then(function(res) {
@@ -91,42 +139,36 @@
       })
     };
 
-      setInterval(function(){
-        showBoard();
-        $scope.getTurn();
-        $scope.loggedIn = ((teamColor=='red') || (teamColor=='blue'));
-        $scope.myColor = teamColor;
-        // console.log('BoardCtrl logged in: ' + loggedIn );
-      }, 1500);
+      // setInterval(function(){
+      //   showBoard();
+      //   $scope.getTurn();
+      $scope.loggedIn = true;
+        // $scope.loggedIn = ((teamColor=='red') || (teamColor=='blue'));
+      //   $scope.myColor = teamColor;
+      //   // console.log('BoardCtrl logged in: ' + loggedIn );
+      // }, 1500);
 
       console.log('team color ' + teamColor);
-      showBoard();
-      $scope.loggedIn = loggedIn;
+      // showBoard();
+      // $scope.loggedIn = loggedIn;
 
-      function showBoard() {
+      // function showBoard() {
         // console.log('showBoard ' + teamColor);
         if (teamColor == 'blue') {
-        tokenFactory.getBlueTokens()
-          .success(function(tokens) {
-            $scope.leftTray = tokens.slice(100,140);
-            $scope.board = tokens.slice(0,100);
-            $scope.rightTray = tokens.slice(140,180);
-            // console.log(tokens);
-          }).error(function(error) {
-            $scope.status = 'Unable to load token data: ' + error;
-          });
+          $scope.leftTray = blueFactory;
+          $scope.board = blueFactory;
+          $scope.rightTray = blueFactory;
+          console.log('blueFactory');
+          console.log(blueFactory);
+
         } else {
-          tokenFactory.getRedTokens()
-            .success(function(tokens) {
-              $scope.leftTray = tokens.slice(100,140);
-              $scope.board = tokens.slice(0,100);
-              $scope.rightTray = tokens.slice(140,180);
-              // console.log(tokens);
-            }).error(function(error) {
-              $scope.status = 'Unable to load token data: ' + error;
-            });
+          $scope.leftTray = redFactory;
+          $scope.board = redFactory;
+          $scope.rightTray = redFactory;
+          console.log('redFactory');
+          console.log(redFactory);
         }
-      };
+      // };
 
       $scope.moveToken = function() {
         console.log('welcome to moveToken');
@@ -153,8 +195,6 @@
                   dstRow: dRow,
                   dstCol: dCol})
           tokenFactory.moveToken(data).success(function() {
-            // console.log('sucessful move');
-            // showBoard();
           }).error(function(error) {
             // console.log('error: ' + error.message);
         })
@@ -229,8 +269,6 @@
             });
           console.log($scope.oRow, $scope.dRow, 'red');
           }
-
-              // console.log('error: ' + error.message);
               activecell.row = 0;
               activecell.col = 0;
         } else {
@@ -304,14 +342,6 @@
           return res.data.turn;
         })
       };
-
-      setInterval(function(){
-        $scope.turn = $scope.getTurn();
-        console.log('setInterval');
-        console.log($scope.turn);
-        $scope.loggedIn = ((teamColor=='red') || (teamColor=='blue'));
-
-      }, 1500);
 
       statusService.getRedPresence().then(function(resp) {
         console.log(resp.redpresent, 'red');

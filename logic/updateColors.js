@@ -8,9 +8,10 @@
   module.exports = {
 
     updateColors : function(changedCell) {
+      console.log('Entering updateColors');
       var cell;
-      // console.log("The updated cell, " + changedCell.row + ":" + changedCell.col
-      //  + " is now " + changedCell.color + "/" + changedCell.rank);
+      console.log("The updated cell, " + changedCell.row + ":" + changedCell.col
+       + " is now " + changedCell.color + "/" + changedCell.rank);
       // convert main board
       // leave stars alone
       if (!((changedCell.row==5 && (changedCell.col==3 || changedCell.col==7))
@@ -25,10 +26,11 @@
       var queryRef = tokRedRef.orderByChild('row').startAt(changedCell.row).endAt(changedCell.row);
       queryRef.once("value", function(snapshot) {
         // the following finds the cell in question and picks out the elements
-        // console.log('red ' + changedCell.row, changedCell.col);
+        console.log('updateColors ' + changedCell.row, changedCell.col);
         for (var key in snapshot.val()) {
           // console.log('Red snapshot ' + snapshot.val()[key].col);
           if (snapshot.val()[key].col == changedCell.col) {
+            console.log('update these colors');
             if (changedCell.color=='blue') {
               color = 'blue';
               rank = 'k'
@@ -36,6 +38,7 @@
               color = changedCell.color;
               rank = changedCell.rank;
             }
+            console.log('update ' + changedCell.row, changedCell.col, key,color,rank)
             tokRedRef.child(key).update({color: color, rank: rank});
           }
         }

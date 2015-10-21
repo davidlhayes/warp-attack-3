@@ -1,8 +1,12 @@
-  var teamColor = 'red';
-  var loggedIn = false;
+  var teamColor = '';
+  var loggedIn;
   var heartBeat = 0;
   // delcare app
   var app = angular.module('warpApp', ['ngRoute', 'ngResource', 'firebase']);
+
+  var tokRedRef = new Firebase('https://warp-attack-3.firebaseIO.com/red');
+  var tokBlueRef = new Firebase('https://warp-attack-3.firebaseIO.com/blue');
+  var playersRef = new Firebase('https://warp-attack-3.firebaseIO.com/players');
 
   // make a factory to render board views/functions
   angular.module('warpApp')
@@ -10,8 +14,7 @@
       var tokenUrl = '/tokens/';
       // var tokenRedUrl = '/tokens/red';
       // var tokenBlueUrl ='/tokens/blue';
-      var tokRedRef = new Firebase('https://warp-attack-3.firebaseIO.com/red');
-      var tokBlueRef = new Firebase('https://warp-attack-3.firebaseIO.com/blue');
+
       var tokenSetTraysUrl = '/tokens/trays';
       var tokenSetRedTrayUrl = '/tokens/redtray';
       var tokenSetRedFieldUrl = '/tokens/redfield';
@@ -69,8 +72,9 @@
           data: move,
           headers: {'Content-Type': 'application/x-www-form-urlencoded'}
           });
+          console.log(data);
+
         return data;
-        console.log('data ' + data);
       }
 
       return tokenFactory;
@@ -131,43 +135,91 @@
       $scope.colSortOrder = 'parseInt(col)';
       $scope.rowSortOrder = 'parseInt(row)';
       var activecell = { row: 0, col: 0};
+      var verb;
 
-      $scope.getTurn = function() {
-        var data = $http.get('/players/turn').then(function(res) {
-        $scope.turn = res.data.turn;
-        return res.data.turn;
-      })
-    };
+      playersRef.on('value', function(snapshot) {
+        $scope.turn = snapshot.val().turn;
+        $scope.redPresent = snapshot.val().red;
+        $scope.bluePresent = snapshot.val().blue;
+        //  craft a message - 1st get data
+        lastOrg = snapshot.val().lastOrg;
+        lastDst = snapshot.val().lastDst;
+        lastMover = snapshot.val().lastMover;
+        lastPrey = snapshot.val().lastPrey;
+        lastMoverSurvived = snapshot.val().lastMoverSurvived;
+        lastPreySurvived = snapshot.val().lastPreySurvived;
+        //
+        if (teamColor == 'blue') {
+          col0 = 11 - lastOrg.col;
+          row0 = 11 - lastOrg.row;
+          col1 = 11 - lastDst.col;
+          row1 = 11 - lastDst.row;
+        } else {
+          col0 = lastOrg.col;
+          row0 = lastOrg.row;
+          col1 = lastDst.col;
+          row1 = lastDst.row;
+        }
+        if ($scope.turn == 'setup') {
+          $scope.moveMessage = 'waiting for players to finish setting up tokens';
+        } else {
+          $scope.moveMessage = 'It\'s ' + $scope.turn + ' turn. Last move was from'
+          + ' row ' + row0 + ', col ' + col0 + ' to row ' + row1 + ', col ' + col1;
+        }
+        if (lastMover.color != 'none' && astPrey.color != 'none') {
+          if (lastMoverSurvived && !lastPreySurvived) {
+            verb = ' took out ';
+          } else if (!lastMoverSurvived && lastPreySurvived) {
+            verb = ' lost to ';
+          } else {
+            verb = ' took itself out and with it ';
+          };
+          $scope.battleMessage = 'In the last melee, ' + lastMover.color + ' ' +
+          lastMover.rank + verb + lastPrey.color + ' ' + lastPrey.rank;
+        }
+        $scope.loggedIn = ((teamColor=='red') || (teamColor=='blue'));
+        $scope.myColor = teamColor;
+        console.log('team color ' + teamColor);
+        // showBoard();
+        // $scope.loggedIn = loggedIn;
+
+        // function showBoard() {
+          // console.log('showBoard ' + teamColor);
+          if (teamColor == 'blue') {
+            $scope.leftTray = blueFactory;
+            $scope.board = blueFactory;
+            $scope.rightTray = blueFactory;
+            console.log('blueFactory');
+            console.log(blueFactory);
+
+          } else {
+            $scope.leftTray = redFactory;
+            $scope.board = redFactory;
+            $scope.rightTray = redFactory;
+            console.log('redFactory');
+            console.log(redFactory);
+          }
+
+      /*  console.log('Turn: ' + $scope.turn);
+        console.log('Red logged in: ' + $scope.redPresence);
+        console.log('Blue logged in: ' + $scope.bluePresence);
+        console.log('Last Moved from: ' + lastOrg.row + ':' + lastOrg.col);
+        console.log('Last Moved to: ' + lastDst.row + ':' + lastDst.col);
+        console.log('Last Mover: ' + lastMover.color + ' ' + lastMover.rank);
+        console.log('Last Prey: ' + lastPrey.color + ' ' + lastPrey.rank);
+        console.log('lastMoverSurvived:' + lastMoverSurvived);
+        console.log('lastPreySurvived:' + lastPreySurvived); */
+    });
 
       // setInterval(function(){
       //   showBoard();
-      //   $scope.getTurn();
-      $scope.loggedIn = true;
-        // $scope.loggedIn = ((teamColor=='red') || (teamColor=='blue'));
-      //   $scope.myColor = teamColor;
+        // $scope.getTurn();
+      // $scope.loggedIn = true;
+
       //   // console.log('BoardCtrl logged in: ' + loggedIn );
       // }, 1500);
 
-      console.log('team color ' + teamColor);
-      // showBoard();
-      // $scope.loggedIn = loggedIn;
 
-      // function showBoard() {
-        // console.log('showBoard ' + teamColor);
-        if (teamColor == 'blue') {
-          $scope.leftTray = blueFactory;
-          $scope.board = blueFactory;
-          $scope.rightTray = blueFactory;
-          console.log('blueFactory');
-          console.log(blueFactory);
-
-        } else {
-          $scope.leftTray = redFactory;
-          $scope.board = redFactory;
-          $scope.rightTray = redFactory;
-          console.log('redFactory');
-          console.log(redFactory);
-        }
       // };
 
       $scope.moveToken = function() {
@@ -283,51 +335,47 @@
   angular.module('warpApp')
     .factory('statusService', [ '$http', '$q', function($http, $q) {
       return {
-        getMovement: function(){
-          $http.get('/players/movement').success(function(data) {
-            if (error) return error;
-            lastMovement = data.movement;
-          });
-          return lastMovement;
-        },
-        getRedPresence: function(){
-          var redPresent = false;
-          var defered = $q.defer();
-          $http.get('/players/redpresent').then(function(resp) {
-            redPresent = resp.data;
-            defered.resolve(redPresent);
-            // return redPresent;
-          }, function(error) {
-            return defered.reject();
-          });
-          return defered.promise;
-        },
-        getBluePresence: function(){
-          var bluePresent = false;
-          var defered = $q.defer();
-          $http.get('/players/bluepresent').then(function(resp) {
-            bluePresent = resp.data;
-            defered.resolve(bluePresent);
-          }, function(error) {
-            return defered.reject();
-          });
-          return defered.promise;
-        },
+        // getMovement: function(){
+        //   $http.get('/players/movement').success(function(data) {
+        //     if (error) return error;
+        //     lastMovement = data.movement;
+        //   });
+        //   return lastMovement;
+        // },
+        // getRedPresence: function(){
+        //   var redPresent = false;
+        //   var defered = $q.defer();
+        //   $http.get('/players/redpresent').then(function(resp) {
+        //     redPresent = resp.data;
+        //     defered.resolve(redPresent);
+        //     // return redPresent;
+        //   }, function(error) {
+        //     return defered.reject();
+        //   });
+        //   return defered.promise;
+        // },
+        // getBluePresence: function(){
+        //   var bluePresent = false;
+        //   var defered = $q.defer();
+        //   $http.get('/players/bluepresent').then(function(resp) {
+        //     bluePresent = resp.data;
+        //     defered.resolve(bluePresent);
+        //   }, function(error) {
+        //     return defered.reject();
+        //   });
+        //   return defered.promise;
+        // },
         setRedPresence: function() {
-          $http.put('/players/setredpresence').success(function() {
-          });
+          playersRef.update({ red: true });
         },
         setBluePresence: function() {
-          $http.put('/players/setbluepresence').success(function() {
-          });
+          playersRef.update({ blue: true });
         },
         endRedPresence: function() {
-          $http.put('/players/endredpresence').success(function() {
-          });
+          playersRef.update({ red: false });
         },
         endBluePresence: function() {
-          $http.put('/players/endbluepresence').success(function() {
-          });
+          playersRef.update({ blue: false });
         }
         }
     }])
@@ -343,27 +391,27 @@
         })
       };
 
-      statusService.getRedPresence().then(function(resp) {
-        console.log(resp.redpresent, 'red');
-        $scope.redpresent = resp.redpresent;
-      }, function(error) {
-        console.log(error);
-      })
-      var x = {};
-      function xs(args) {
-        $timeout(function() {
-          console.log(args);
-        })
-      }
+      // statusService.getRedPresence().then(function(resp) {
+      //   console.log(resp.redpresent, 'red');
+      //   $scope.redpresent = resp.redpresent;
+      // }, function(error) {
+      //   console.log(error);
+      // })
+      // var x = {};
+      // function xs(args) {
+      //   $timeout(function() {
+      //     console.log(args);
+      //   })
+      // }
 
-      statusService.getBluePresence().then(function(resp) {
-        x = resp.bluepresent
-        xs(x);
-        console.log(resp.bluepresent, 'blue');
-        $scope.bluepresent = resp.bluepresent;
-      }, function(error) {
-        console.log(error);
-      })
+      // statusService.getBluePresence().then(function(resp) {
+      //   x = resp.bluepresent
+      //   xs(x);
+      //   console.log(resp.bluepresent, 'blue');
+      //   $scope.bluepresent = resp.bluepresent;
+      // }, function(error) {
+      //   console.log(error);
+      // })
 
       $scope.showMoveStatus = function() {
         $scope.movement = statusService.getMovement();
@@ -391,24 +439,10 @@
 
       $scope.logOutRed = function() {
         statusService.endRedPresence();
-        statusService.getRedPresence().then(function(resp) {
-          console.log(resp.redpresent, 'red');
-          $scope.redpresent = resp.redpresent;
-        }, function(error) {
-          console.log(error);
-        })
       };
 
       $scope.logOutBlue = function() {
         statusService.endBluePresence();
-        statusService.getBluePresence().then(function(resp) {
-          x = resp.bluepresent
-          xs(x);
-          console.log(resp.bluepresent, 'blue');
-          $scope.bluepresent = resp.bluepresent;
-        }, function(error) {
-          console.log(error);
-        })
       };
 
   }]);

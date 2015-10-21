@@ -98,21 +98,22 @@
 
         <div class="row buttons">
           <div id="blue-button-col">
-            <button ng-hide=bluepresent ng-click=chooseBlue()>Choose Blue</button>
-            <h3 ng-show=bluepresent>WAITING TO<br>PLAY YOU</h3>
-            <button ng-show=bluepresent ng-click=logOutBlue()>Log Out</button>
+            <button ng-hide=bluePresent ng-click=chooseBlue()>Choose Blue</button>
+            <h3 ng-show=bluePresent>WAITING TO<br>PLAY YOU</h3>
+            <button ng-show=bluePresent ng-click=logOutBlue()>Log Out</button>
           </div>
           <div id="red-button-col">
-            <button ng-hide=redpresent ng-click=chooseRed()>Choose Red</button>
-            <h3 ng-show=redpresent>WAITING TO<br>PLAY YOU</h3>
-            <button ng-show=redpresent ng-click=logOutRed()>Log Out</button>
+            <button ng-hide=redPresent ng-click=chooseRed()>Choose Red</button>
+            <h3 ng-show=redPresent>WAITING TO<br>PLAY YOU</h3>
+            <button ng-show=redPresent ng-click=logOutRed()>Log Out</button>
           </div>
         </div>
       </div>
-
-      <!-- <div class="controls" ng-controller="PlayerCtrl" ng-show="loggedIn">
-        <p>Turn: {{turn}} Last: Movement: {{movement}}</p>
-      </div> -->
+      <div class="divider"></div>
+      <div class="controls" ng-controller="PlayerCtrl" ng-show="loggedIn">
+        <p>{{ moveMessage }}</p>
+        <p>{{ battleMessage }}</p>
+      </div>
     </div>
   </body>
 </html>

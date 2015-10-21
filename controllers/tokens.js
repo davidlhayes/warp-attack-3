@@ -246,29 +246,29 @@
       snapshot.forEach(function(csshot) {
         thisRef = new Firebase(boardUrl + '/' + csshot.key());
         // fill staging area with tokens from array
-      if (csshot.val().row >= 15) {
-          r = reds.pop();
-          thisRef.update({color: 'red', rank: r});
-          cell = {
-            id: csshot.key(),
-            row: csshot.val().row,
-            col: csshot.val().col,
-            color: 'red',
-            rank: r
-          };
-          updateColors.updateColors(cell);
-        // replace any other blues with empties
-      } else if (csshot.val().color == 'red') {
-          thisRef.update({color: 'none', rank: 'empty'});
-          cell = {
-            id: csshot.key(),
-            row: csshot.val().row,
-            col: csshot.val().col,
-            color: 'red',
-            rank: 'empty'
-          };
-          updateColors.updateColors(cell);          ;
-      }
+        if (csshot.val().row >= 15) {
+            r = reds.pop();
+            thisRef.update({color: 'red', rank: r});
+            cell = {
+              id: csshot.key(),
+              row: csshot.val().row,
+              col: csshot.val().col,
+              color: 'red',
+              rank: r
+            };
+            updateColors.updateColors(cell);
+          // replace any other blues with empties
+        } else if (csshot.val().color == 'red') {
+            thisRef.update({color: 'none', rank: 'empty'});
+            cell = {
+              id: csshot.key(),
+              row: csshot.val().row,
+              col: csshot.val().col,
+              color: 'red',
+              rank: 'empty'
+            };
+            updateColors.updateColors(cell);          ;
+        }
       });
     });
 
@@ -326,6 +326,17 @@
        };
        updateColors.updateColors(cell);
      }
+     var i = 0;
+     tokensRef.once("value", function(snapshot) {
+       snapshot.forEach(function(csshot) {
+         if (csshot.val().row <=11 && csshot.val().rank=='empty') i++;
+       });
+       if (i==12) {
+         playersRef.update({ turn : 'blue' });
+       }
+     });
+
+
      });
    });
     res.json({ message: 'success'});
@@ -348,6 +359,8 @@
   // move Token
   controller.put('/move', function(req, res, next) {
     // pull out arguments
+    console.log('req.body');
+    console.log(req.body);
     var org = {
       row: req.body.orgRow,
       col: req.body.orgCol,
@@ -370,6 +383,17 @@
 
     console.log('token.js ' + org.row,org.col,dst.row,dst.col);
 
+
+// this pattern works
+    // var q = tokensRef.orderByChild('row').startAt(org.col).endAt(org.col);
+    // q.once('value',function(s) {
+    //   s.forEach(function(t) {
+    //     console.log(t.key(),t.val().row,t.val().col,t.val().color,t.val().rank);
+    //   });
+    // });
+// this pattern worked
+
+
     // what mode are we in
     playersRef.child('turn').once("value", function(snapshot) {
       var isSetup = (snapshot.val()=='setup');
@@ -377,29 +401,30 @@
       console.log('playersRef ' + snapshot.val());
 
       // first get the id of the mover
-        var qRef1 = tokensRef.orderByChild('row').startAt(org.col).endAt(org.col);
+        var qRef1 = tokensRef.orderByChild('row').startAt(org.row).endAt(org.row);
         qRef1.once("value", function(qSnap1) {
-          for (var key in qSnap1.val()) {
-            console.log('qSnap1 ' + qSnap1.val()[key].col)
-            if (qSnap1.val()[key].col == org.col) {
-              org.id = qSnap1.val()[key]._id;
-              org.color = qSnap1.val()[key].color;
-              org.rank = qSnap1.val()[key].rank;
+          qSnap1.forEach(function(s) {
+            if (s.val().col == org.col) {
+              org.id = s.key();
+              org.color = s.val().color;
+              org.rank = s.val().rank;
+              console.log('org: ' + org.id,org.row,org.col,org.color,org.rank);
             }
-          }
+          });
           // 2nd get the id of the prey
             var queryRef = tokensRef.orderByChild('row').startAt(dst.col).endAt(dst.col);
             queryRef.once("value", function(qSnap2) {
-              for (var key in qSnap2.val()) {
-                if (qSnap2.val()[key].col == org.col) {
-                  dst.id = qSnap1.val()[key]._id;
-                  dst.color = qSnap1.val()[key].color;
-                  dst.rank = qSnap1.val()[key].rank;
+            qSnap2.forEach(function(t) {
+                if (t.val().col == org.col) {
+                  dst.id = t.key();
+                  dst.color = t.val().color;
+                  dst.rank = t.val().rank;
+                  console.log('dst: ' + dst.id,dst.row,dst.col,dst.color,dst.rank);
                 }
-              }
+              });
 
-              console.log('original ' + org.row,org.color,org.id,org.color,org.rank);
-              console.log('destination ' + dst.row,dst.color,dst.id,dst.color,dst.rank);
+              console.log('origin ' + org.row,org.col,org.id,org.color,org.rank);
+              console.log('destination ' + dst.row,dst.col,dst.id,dst.color,dst.rank);
 
               if (isSetup) {
                 moveResult = checkSet.checkSet(org,dst);
@@ -407,26 +432,99 @@
                 moveResult = checkMove.checkMove(org,dst);
               }
               console.log(moveResult)
-
+              switch(moveResult) {
+                case 'same square':
+                case 'forbidden':
+                case 'immovable':
+                case 'mover out of bounds':
+                case 'destination out of bounds':
+                case 'out of bounds':
+                  updateColors.updateColors(org);
+                  updateColors.updateColors(dst);
+                  break;
+                case 'move to empty space':
+                  // swap empty with mover
+                  console.log('here');
+                  // update destination with origin specs
+                  console.log('sent to updateColors: ' + org.color, org.rank);
+                  tokensRef.child(dst.id).update({ color: org.color, rank: org.rank },
+                    tokRedRef.child(dst.id).update({color: org.color, rank: org.rank}));
+                  tokensRef.child(dst.id).on('value', function(snapshot) {
+                    console.log('value after ' + snapshot.key(),snapshot.val().row,snapshot.val().col,snapshot.val().color,snapshot.val().rank);
+                  });
+                  // update origin with empty
+                  console.log('sent to updateColors: ' + org.color, org.rank);
+                  tokensRef.child(org.id).update({ color: 'none', rank: 'empty' },
+                    tokRedRef.child(org.id).update({color: 'none', rank: 'empty'}));
+                  // console.log('sent to updateColors: ' + org.color, org.rank);
+                  // updateColors.updateColors(org);
+                  // console.log('sent to updateColors: ' + dst.color, dst.rank);
+                  // updateColors.updateColors(dst);
+                  break;
+                case 'victory':
+                  // swap org and dst
+                  // update destination with origin spec
+                  tokensRef.child(dst.id).update({ color: org.color, rank: org.rank });
+                  // update origin with empty
+                  tokensRef.child(org.id).update({ color: 'none', rank: 'empty' });
+                  // move loser to empty space in appropriate tray
+                  discard.discard(dst.color, dst.rank);
+                  updateColors.updateColors(org);
+                  updateColors.updateColors(dst);
+                  break;
+                case 'win':
+                  // swap org and dst
+                  // update destination with origin spec
+                  tokensRef.child(dst.id).update({ color: org.color, rank: org.rank });
+                  // update origin with empty
+                  tokensRef.child(org.id).update({ color: 'none', rank: 'empty' });
+                  // move loser to empty space in appropriate tray
+                  discard.discard(dst.color, dst.rank);
+                  updateColors.updateColors(org);
+                  updateColors.updateColors(dst);
+                  break;
+                case 'defeat':
+                  // just place the mover in the tray
+                  tokensRef.child(org.id).update({ color: 'none', rank: 'empty' });
+                  // move loser to empty space in appropriate tray
+                  discard.discard(org.color, org.rank);
+                  updateColors.updateColors(org);
+                  updateColors.updateColors(dst);
+                  break;
+                case 'double defeat':
+                  // move org and dst to tray, replace with empties
+                  // mover first
+                  // just place the mover in the tray
+                  tokensRef.child(org.id).update({ color: 'none', rank: 'empty' });
+                  // move loser to empty space in appropriate tray
+                  discard.discard(org.color, org.rank);
+                  // prey next
+                  // just place the mover in the tray
+                  tokensRef.child(dst.id).update({ color: 'none', rank: 'empty' });
+                  // move loser to empty space in appropriate tray
+                  discard.discard(org.color, org.rank);
+                  updateColors.updateColors(org);
+                  updateColors.updateColors(dst);
+                  res.json({ message: moveResult });
+                  break;
+                default:
+              }
             }); // end get id of the prey
 
       }); // end get id of the mover
 
     }); // end playersRef setup check
 
-    tokensRef.once("value", function(snapshot) {
-      snapshot.forEach(function(childSnapshot) {
-        updateColors.updateColors(childSnapshot.val());
-        console.log('childSnapshot val');
-        console.log(childSnapshot.val());
-      });
-      console.log('complete childsnapshot');
-      // res.json(snapshot.val());
-    });
-
-    res.json({ message: 'success'});
+    res.json({ message: moveResult });
 
   }); // end controller.put
 
+  var onComplete = function(error) {
+    if (error) {
+      console.log('Synchronization failed');
+    } else {
+      console.log('Synchronization succeeded');
+    }
+  };
 
   module.exports = controller;

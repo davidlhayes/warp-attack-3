@@ -3,6 +3,8 @@ module.exports =
   // Check to see if a move to set a token pre-game is legal
 
   checkSet : function(org,dst) {
+    console.log('checkSet.......');
+    console.log(org.row, org.col, org.color, org.rank, dst.row, dst.col, dst.color, dst.rank);
     // bad data
     if ((org.row == dst.row) && (org.col == dst.col)) return 'same space';
     // are coords within the appropriate staging area or tray (blue)

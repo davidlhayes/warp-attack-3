@@ -1,4 +1,6 @@
   var teamColor = '';
+  var lastRed = false;
+  var lastBlue = false;
   var loggedIn;
   var heartBeat = 0;
   // delcare app
@@ -134,13 +136,26 @@
       console.log('HELLO WORLD');
       $scope.colSortOrder = 'parseInt(col)';
       $scope.rowSortOrder = 'parseInt(row)';
+      var col0;
+      var row0;
+      var col1;
+      var row1;
       var activecell = { row: 0, col: 0};
       var verb;
 
+      playersRef.on('child_changed', function(childSnapshot, prevChildKey) {
+        console.log('There has been a playersRef change');
+      });
+
       playersRef.on('value', function(snapshot) {
+        console.log('players child changed');
+        if (snapshot.val().red = true && !lastRed) $scope.setRedTray();
+        if (snapshot.val().blue = true && !lastBlue) $scope.setBlueTray();
         $scope.turn = snapshot.val().turn;
         $scope.redPresent = snapshot.val().red;
         $scope.bluePresent = snapshot.val().blue;
+        lastRed = snapshot.val().red;
+        lastBlue = snapshot.val().blue;
         //  craft a message - 1st get data
         lastOrg = snapshot.val().lastOrg;
         lastDst = snapshot.val().lastDst;
@@ -268,6 +283,16 @@
         tokenFactory.setBlueField();
       }
 
+      $scope.startGameRed = function() {
+        console.log('start game Red');
+        playersRef.update({ turn: 'red' });
+      }
+
+      $scope.startGameBlue = function() {
+        console.log('start game Blue');
+        playersRef.update({ turn: 'blue' });
+      }
+
       $scope.setTrays = function() {
         tokenFactory.setTrays();
       }
@@ -316,6 +341,7 @@
                     orgCol: $scope.oCol,
                     dstRow: $scope.dRow,
                     dstCol: $scope.dCol})
+                    console.log('Move data ' + $scope.oRow,$scope.oCol,$scope.dRow,$scope.dCol);
             tokenFactory.moveToken(data).success(function(){
               console.log('hey');
             });
@@ -372,12 +398,12 @@
           playersRef.update({ blue: true });
         },
         endRedPresence: function() {
-          playersRef.update({ red: false });
+          playersRef.update({ red: false, turn: 'setup' });
         },
         endBluePresence: function() {
-          playersRef.update({ blue: false });
+          playersRef.update({ blue: false, turn: 'setup' });
         }
-        }
+      }
     }])
     .controller('PlayerCtrl', ['$scope', '$route', '$http', 'statusService', 'tokenFactory', '$timeout',
                                   function($scope, $route, $http, statusService,tokenFactory, $timeout) {
@@ -387,6 +413,7 @@
           $scope.turn = res.data.turn;
           console.log('getTurn');
           console.log($scope.turn);
+
           return res.data.turn;
         })
       };
@@ -444,5 +471,6 @@
       $scope.logOutBlue = function() {
         statusService.endBluePresence();
       };
+
 
   }]);

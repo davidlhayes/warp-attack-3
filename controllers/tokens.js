@@ -17,20 +17,36 @@
   var turnRef = new Firebase('https://warp-attack-3.firebaseIO.com/turn');
   var playersRef = new Firebase('https://warp-attack-3.firebaseIO.com/players');
 
+  var isSetup;
+  var cnt = 0;
+
   // Board API -- set board tokens, move tokens (as governed by game rules)
  //  and get token placement information
+ //
+ // if turn is 'setup' count non-empty cells on field to see if it's time to
+ // start the game
 
-  // boardDelete
-  controller.delete('/', function(req, res, next) {
-    boardModel.collection.remove();
-    boardModel.find(function(error,tokens) {
-      if (error) return error;
-      res.json(tokens);
-    });
+  if (isSetup == null) isSetup=true;
+
+
+
+  // watch set to update red and blue versions of the board when cells CHANGE
+  tokensRef.on('child_changed', function(childSnapshot) {
+    var empties = 0;
+    var cell = {
+      id:    childSnapshot.key(),
+      row:   childSnapshot.val().row,
+      col:   childSnapshot.val().col,
+      color: childSnapshot.val().color,
+      rank:  childSnapshot.val().rank
+    }
+    updateColors.updateColors(cell);
+
   });
 
-  // boardInitialize
+  // boardInitialize with empties
   controller.post('/', function(req, res, next) {
+    // remove all versions of the board and generate fresh, empty copies
     tokensRef.remove();
     tokBlueRef.remove();
     tokRedRef.remove();
@@ -54,7 +70,7 @@
           color = 'none';
           rank = 'empty';
         }
-        console.log(i.toString(),j.toString(),color,rank);
+        // console.log(i.toString(),j.toString(),color,rank);
         tokensRef.push().set({
           row: i.toString(),
           col: j.toString(),
@@ -89,54 +105,34 @@
     var reds = [ 1,2,3,3,4,4,4,5,5,5,5,6,6,6,6,7,7,7,7,8,8,8,8,8,
                     9,9,9,9,9,9,9,9,'m','m','m','m','m','m','s','f' ];
 
-    tokensRef.remove();
-    var cell = { 'row' : 0, 'col' : 0, color : 'none', rank : 'empty'};
-    // set up main board with empty cells and stars
-    for (var i=1; i<19; i++) {
-      for (var j=1; j<11; j++) {
-        // place stars
-        if (i==5 && (j==3 || j==7)) {
-          color = 'none';
-          rank = '1-star';
-        } else if (i==5 && (j==4 || j==8)) {
-          color = 'none';
-          rank = '2-star';
-        } else if (i==6 && (j==3 || j==7)) {
-          color = 'none';
-          rank = '3-star';
-        } else if (i==6 && (j==4 || j==8)) {
-          color = 'none';
-          rank = '4-star';
-        } else if (i <= 10) {
-          color = 'none';
-          rank = 'empty';
-        } else if (i <= 14) {
-          color = 'blue';
-          rank = blues.pop();
-        } else {
-          color = 'red'
-          rank = reds.pop();
-        }
-        console.log('trays');
-        console.log(i.toString(),j.toString(),color, rank);
-        tokensRef.push().set({
-          row: i.toString(),
-          col: j.toString(),
-          color: color,
-          rank: rank
-        });
-      }
-    }
     tokensRef.once("value", function(snapshot) {
+      // for each cell id
       snapshot.forEach(function(childSnapshot) {
-        updateColors.updateColors(childSnapshot.val());
-        console.log('childSnapshot val');
-        console.log(childSnapshot.val());
+        thisRef = new Firebase(boardUrl + '/' + childSnapshot.key());
+        // fill staging area with tokens from array
+      if ((childSnapshot.val().row > 10) && (childSnapshot.val().row <=14)) {
+          thisRef.update({color: 'blue', rank: blues.pop()});
+        // replace any other blues with empties
+      } else if (childSnapshot.val().color == 'blue') {
+          thisRef.update({color: 'none', rank: 'empty'});
+      }
       });
-      console.log('complete childsnapshot');
-      // res.json(snapshot.val());
     });
 
+    tokensRef.once("value", function(snapshot) {
+      // for each cell id
+      snapshot.forEach(function(childSnapshot) {
+        thisRef = new Firebase(boardUrl + '/' + childSnapshot.key());
+        // fill staging area with tokens from array
+        if (childSnapshot.val().row >= 15) {
+            r = reds.pop();
+            thisRef.update({color: 'red', rank: r});
+          // replace any other blues with empties
+        } else if (childSnapshot.val().color == 'red') {
+            thisRef.update({color: 'none', rank: 'empty'});
+        }
+      });
+    });
     res.json({ message: 'success'});
   });
 
@@ -163,15 +159,6 @@
       }
       });
     });
-    tokensRef.once("value", function(snapshot) {
-      snapshot.forEach(function(childSnapshot) {
-        updateColors.updateColors(childSnapshot.val());
-        console.log('childSnapshot val');
-        console.log(childSnapshot.val());
-      });
-      console.log('complete childsnapshot');
-      // res.json(snapshot.val());
-    });
     // returns a success json
     res.json({ message: 'success'});
   });
@@ -195,36 +182,12 @@
         if (csshot.val().row <= 4) {
           r = blues.pop();
           thisRef.update({color: 'blue', rank: r});
-          cell = {
-            id: csshot.key(),
-            row: csshot.val().row,
-            col: csshot.val().col,
-            color: 'blue',
-            rank: r
-          };
-        updateColors.updateColors(cell);
         // fill tray with empties
       } else if ((csshot.val().row > 10) && (csshot.val().row <=14)) {
           thisRef.update({color: 'none', rank: 'empty'});
-          cell = {
-            id: csshot.key(),
-            row: csshot.val().row,
-            col: csshot.val().col,
-            color: 'none',
-            rank: 'empty'
-          };
-          updateColors.updateColors(cell);
         // replace any other blues with empties
       } else if (csshot.val().color == 'blue') {
           thisRef.update({color: 'none', rank: 'empty'});
-          cell = {
-            id: csshot.key(),
-            row: csshot.val().row,
-            col: csshot.val().col,
-            color: 'none',
-            rank: 'empty'
-          };
-          updateColors.updateColors(cell);
       }
       });
     });
@@ -239,7 +202,6 @@
                   9,9,9,9,9,9,9,9,'mine','mine','mine','mine','mine','mine','mine','flag' ];
 
     var r;
-    var cell = {};
 
     tokensRef.once("value", function(snapshot) {
       // for each cell id
@@ -249,29 +211,12 @@
         if (csshot.val().row >= 15) {
             r = reds.pop();
             thisRef.update({color: 'red', rank: r});
-            cell = {
-              id: csshot.key(),
-              row: csshot.val().row,
-              col: csshot.val().col,
-              color: 'red',
-              rank: r
-            };
-            updateColors.updateColors(cell);
           // replace any other blues with empties
         } else if (csshot.val().color == 'red') {
             thisRef.update({color: 'none', rank: 'empty'});
-            cell = {
-              id: csshot.key(),
-              row: csshot.val().row,
-              col: csshot.val().col,
-              color: 'red',
-              rank: 'empty'
-            };
-            updateColors.updateColors(cell);          ;
         }
       });
     });
-
     res.json({ message: 'success'});
   });
 
@@ -279,8 +224,6 @@
   controller.put('/redfield', function(req, res, next) {
     // if anything was passed as an argument, this is a quick set
       // useful sample arrangement
-    var cell;
-    var r;
 
     var reds = [ 5 , 8 , 6 ,'mine','flag', 4 ,'mine', 9 , 6 , 7 ,
                 'mine', 7 , 3 , 5 , 9 , 1 ,'mine', 9 , 9 , 4 ,
@@ -292,68 +235,19 @@
      snapshot.forEach(function(csshot) {
        thisRef = new Firebase(boardUrl + '/' + csshot.key());
        // fill staging area with tokens from preset array
-     if (csshot.val().row >= 7 && csshot.val().row <= 10) {
-       r = reds.pop();
-       thisRef.update({color: 'red', rank: r});
-       cell = {
-         id: csshot.key(),
-         row: csshot.val().row,
-         col: csshot.val().col,
-         color: 'red',
-         rank: r
-       };
-       updateColors.updateColors(cell);
+      if (csshot.val().row >= 7 && csshot.val().row <= 10) {
+        r = reds.pop();
+        thisRef.update({color: 'red', rank: r});
        // fill tray with empties
-     } else if ((csshot.val().row >= 15) && (csshot.val().row <=18)) {
-       thisRef.update({color: 'none', rank: 'empty'});
-       cell = {
-         id: csshot.key(),
-         row: csshot.val().row,
-         col: csshot.val().col,
-         color: 'none',
-         rank: 'empty'
-       };
-       updateColors.updateColors(cell);
+      } else if ((csshot.val().row >= 15) && (csshot.val().row <=18)) {
+        thisRef.update({color: 'none', rank: 'empty'});
        // replace any other reds with empties
-     } else if (csshot.val().color == 'red') {
-       thisRef.update({color: 'none', rank: 'empty'});
-       cell = {
-         id: csshot.key(),
-         row: csshot.val().row,
-         col: csshot.val().col,
-         color: 'none',
-         rank: 'empty'
-       };
-       updateColors.updateColors(cell);
-     }
-     var i = 0;
-     tokensRef.once("value", function(snapshot) {
-       snapshot.forEach(function(csshot) {
-         if (csshot.val().row <=11 && csshot.val().rank=='empty') i++;
-       });
-       if (i==12) {
-         playersRef.update({ turn : 'blue' });
-       }
-     });
-
-
-     });
+      } else if (csshot.val().color == 'red') {
+        thisRef.update({color: 'none', rank: 'empty'});
+      }
+    });
    });
     res.json({ message: 'success'});
-  });
-
-
-  // get all
-  controller.get('/', function(req, res, next) {
-    tokensRef.on("value", function(snapshot) {
-      snapshot.forEach(function(childSnapshot) {
-        updateColors.updateColors(childSnapshot.val());
-      });
-      res.json(snapshot.val());
-    }, function (errorObject) {
-      err = "The read failed: " + errorObject.code;
-      res.json({err: message});
-    });
   });
 
   // move Token
@@ -396,7 +290,7 @@
 
     // what mode are we in
     playersRef.child('turn').once("value", function(snapshot) {
-      var isSetup = (snapshot.val()=='setup');
+      isSetup = (snapshot.val()=='setup');
       console.log('isSetup: ' + isSetup);
       console.log('playersRef ' + snapshot.val());
 
@@ -412,17 +306,20 @@
             }
           });
           // 2nd get the id of the prey
-            var queryRef = tokensRef.orderByChild('row').startAt(dst.col).endAt(dst.col);
+            var queryRef = tokensRef.orderByChild('row').startAt(dst.row).endAt(dst.row);
             queryRef.once("value", function(qSnap2) {
-            qSnap2.forEach(function(t) {
-                if (t.val().col == org.col) {
+              qSnap2.forEach(function(t) {
+                if (t.val().col == dst.col) {
                   dst.id = t.key();
                   dst.color = t.val().color;
                   dst.rank = t.val().rank;
+                  console.log(t.val().row,t.val().col);
                   console.log('dst: ' + dst.id,dst.row,dst.col,dst.color,dst.rank);
                 }
               });
-
+              for (var key in dst) {
+                console.log(key,dst[key]);
+              }
               console.log('origin ' + org.row,org.col,org.id,org.color,org.rank);
               console.log('destination ' + dst.row,dst.col,dst.id,dst.color,dst.rank);
 
@@ -432,6 +329,9 @@
                 moveResult = checkMove.checkMove(org,dst);
               }
               console.log(moveResult)
+              for (var key in dst) {
+                console.log(key,dst[key]);
+              }
               switch(moveResult) {
                 case 'same square':
                 case 'forbidden':
@@ -439,27 +339,29 @@
                 case 'mover out of bounds':
                 case 'destination out of bounds':
                 case 'out of bounds':
-                  updateColors.updateColors(org);
-                  updateColors.updateColors(dst);
                   break;
                 case 'move to empty space':
                   // swap empty with mover
-                  console.log('here');
+                  console.log('here ' + dst.id);
                   // update destination with origin specs
-                  console.log('sent to updateColors: ' + org.color, org.rank);
-                  tokensRef.child(dst.id).update({ color: org.color, rank: org.rank },
-                    tokRedRef.child(dst.id).update({color: org.color, rank: org.rank}));
-                  tokensRef.child(dst.id).on('value', function(snapshot) {
-                    console.log('value after ' + snapshot.key(),snapshot.val().row,snapshot.val().col,snapshot.val().color,snapshot.val().rank);
-                  });
+                  // might work, but it slows things down. Now going to add a button
+                  // if (isSetup) {
+                  //   console.log('isSetup');
+                  //   cnt = 0;
+                    tokensRef.child(dst.id).update({ color: org.color, rank: org.rank });
+                  //     tokensRef.once("value", function(snapshot) {
+                  //       snapshot.forEach(function(childSnapshot) {
+                  //         if (childSnapshot.val().row > 10 && childSnapshot.val().rank=='empty') cnt++;
+                  //         console.log(childSnapshot.val().row,childSnapshot.val().rank );
+                  //         if (cnt==80) {
+                  //           playersRef.update({ turn: 'blue'});
+                  //         }
+                  //       });
+                  //     })
+                  //   );
+                  // }
                   // update origin with empty
-                  console.log('sent to updateColors: ' + org.color, org.rank);
-                  tokensRef.child(org.id).update({ color: 'none', rank: 'empty' },
-                    tokRedRef.child(org.id).update({color: 'none', rank: 'empty'}));
-                  // console.log('sent to updateColors: ' + org.color, org.rank);
-                  // updateColors.updateColors(org);
-                  // console.log('sent to updateColors: ' + dst.color, dst.rank);
-                  // updateColors.updateColors(dst);
+                  tokensRef.child(org.id).update({ color: 'none', rank: 'empty' });
                   break;
                 case 'victory':
                   // swap org and dst
@@ -469,8 +371,6 @@
                   tokensRef.child(org.id).update({ color: 'none', rank: 'empty' });
                   // move loser to empty space in appropriate tray
                   discard.discard(dst.color, dst.rank);
-                  updateColors.updateColors(org);
-                  updateColors.updateColors(dst);
                   break;
                 case 'win':
                   // swap org and dst
@@ -480,16 +380,12 @@
                   tokensRef.child(org.id).update({ color: 'none', rank: 'empty' });
                   // move loser to empty space in appropriate tray
                   discard.discard(dst.color, dst.rank);
-                  updateColors.updateColors(org);
-                  updateColors.updateColors(dst);
                   break;
                 case 'defeat':
                   // just place the mover in the tray
                   tokensRef.child(org.id).update({ color: 'none', rank: 'empty' });
                   // move loser to empty space in appropriate tray
                   discard.discard(org.color, org.rank);
-                  updateColors.updateColors(org);
-                  updateColors.updateColors(dst);
                   break;
                 case 'double defeat':
                   // move org and dst to tray, replace with empties
@@ -503,8 +399,6 @@
                   tokensRef.child(dst.id).update({ color: 'none', rank: 'empty' });
                   // move loser to empty space in appropriate tray
                   discard.discard(org.color, org.rank);
-                  updateColors.updateColors(org);
-                  updateColors.updateColors(dst);
                   res.json({ message: moveResult });
                   break;
                 default:

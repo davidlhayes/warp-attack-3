@@ -31,31 +31,7 @@
     });
   });
 
-  controller.get('/turn', function(req, res, next) {
-    // determine current turn
-    var turn;
-    // get current info
-    playersRef.once("value", function(snapshot) {
-    // initialize turn to setup when we don't see both players logged in
-      // console.log('/turn is ' + snapshot.val().turn);
-      if (!snapshot.val().red || !snapshot.val().blue || snapshot.val().turn==null) {
-        playersRef.update({ turn: 'setup'});
-      } else {
-        // if in setup mode perform a special check
-        if (snapshot.val().turn == 'setup') {
-          tokensRef.orderByChild("rank").equalTo("empty").on("value", function(snp) {
-            var empties = Object.keys(snp.val()).length;
-            // console.log('empties' + empties);
-          });
 
-        } // end of players turn setup
-      } // players red or blue
-
-      res.json({ 'turn': snapshot.val().turn});
-
-    }); // 1st playerModel
-
-}); // controller.get
 
 
 

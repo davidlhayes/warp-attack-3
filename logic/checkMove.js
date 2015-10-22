@@ -63,11 +63,13 @@
             tokensRef.on('value', function(snapshot) {
               snapshot.orderByChild('row').startAt(minBnd).endAt(maxBnd).once('value',
                 function(childSnapshot) {
-                  for (var key in childSnapshot.val()) {
-                    if (childsnapshot.val()[key].col==org.col && childsnaphot.val()[key].rank != 'empty') {
-                      return 'blocked move';
-                    }
-                  }
+                  console.log('move 9');
+                  consoel.log(childSnapshot.val());
+                  // for (var key in childSnapshot.val()) {
+                  //   if (childsnapshot.val()[key].col==org.col && childsnaphot.val()[key].rank != 'empty') {
+                  //     return 'blocked move';
+                  //   }
+                  // }
                 });
               });
             }

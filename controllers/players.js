@@ -11,16 +11,16 @@
   controller.post('/', function(req, res, next) {
     playersRef.remove();
     playersRef.set({
-      'red' : false,
-       'blue': false,
-       'turn': 'setup',
-       'lastOrg': { row: 1, col: 2 },
-       'lastDst': { row: 1, col: 2 },
-       'lastMover': { color: 'none', rank: 'empty' },
-       'lastPrey': { color: 'none', rank: 'empty' },
-       'lastMoverSurvived': false,
-       'lastPreySurvived': false,
-       'moveResult': 'none'
+      red : false,
+       blue: false,
+       turn: 'setup',
+       lastOrg: { row: 1, col: 2 },
+       lastDst: { row: 1, col: 2 },
+       lastMover: { color: 'none', rank: 'empty' },
+       lastPrey: { color: 'none', rank: 'empty' },
+       lastMoverSurvived: false,
+       lastPreySurvived: false,
+       moveResult: 'none'
     });
     res.json({ message: 'success'});
   });

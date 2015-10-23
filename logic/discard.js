@@ -17,14 +17,15 @@
         lo = 15;
         hi = 18;
       }
-      var queryRef = tokensRef.orderByChild('row').startAt(lo).endAt(hi);
-      queryRef.once("value", function(snapshot) {
-        for (var key in snapshot) {
-          if ((snapshot.val()[key].col == 'empty') && !found) {
-            tokensRef.child(snapshot.val()[key]._id).update({ color: color, rank: rank });
+      tokensRef.once("value", function(snapshot) {
+        snapshot.forEach(function(childSnapshot) {
+          console.log(childSnapshot.key(),childSnapshot.val().row,childSnapshot.val().col,childSnapshot.val().col,childSnapshot.val().rank);
+          if ((parseInt(childSnapshot.val().row) >= lo && parseInt(childSnapshot.val().row) <= hi
+                && childSnapshot.val().rank=='empty') && !found) {
+            tokensRef.child(childSnapshot.key()).update({ color: color, rank: rank });
             found = true;
           } // check for empty
-        } // for loop
+        }); // for loop
       }); // snapshot
     } // end function
   }

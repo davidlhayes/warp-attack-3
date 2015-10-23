@@ -96,7 +96,7 @@
 
 // set empty field and full trays
   controller.put('/trays', function(req, res, next) {
-
+    console.log('set up trays');
     var length;
     var color;
     var rank;
@@ -191,6 +191,7 @@
       }
       });
     });
+      playersRef.update({ blue: true });
         // returns a success json
         res.json({ message: 'success'});
   });
@@ -247,6 +248,7 @@
       }
     });
    });
+   playersRef.update({ red: true });
     res.json({ message: 'success'});
   });
 
@@ -273,7 +275,10 @@
     var spot;
     var samespace = false;
     var moveResult;
+    var tc;
 
+    var preySurvived;
+    var moverSurvived;
 
     console.log('token.js ' + org.row,org.col,dst.row,dst.col);
 
@@ -332,36 +337,36 @@
               for (var key in dst) {
                 console.log(key,dst[key]);
               }
+              moverSurvived = true;
+              preySurvived = true;
               switch(moveResult) {
                 case 'same square':
+                  updateTurn = false;
+                  break;
                 case 'forbidden':
+                  updateTurn = false;
+                  break;
                 case 'immovable':
+                  updateTurn = false;
+                  break;
                 case 'mover out of bounds':
+                  updateTurn = false;
+                  break;
                 case 'destination out of bounds':
+                  updateTurn = false;
+                  break;
                 case 'out of bounds':
+                  updateTurn = false;
                   break;
                 case 'move to empty space':
                   // swap empty with mover
                   console.log('here ' + dst.id);
                   // update destination with origin specs
                   // might work, but it slows things down. Now going to add a button
-                  // if (isSetup) {
-                  //   console.log('isSetup');
-                  //   cnt = 0;
-                    tokensRef.child(dst.id).update({ color: org.color, rank: org.rank });
-                  //     tokensRef.once("value", function(snapshot) {
-                  //       snapshot.forEach(function(childSnapshot) {
-                  //         if (childSnapshot.val().row > 10 && childSnapshot.val().rank=='empty') cnt++;
-                  //         console.log(childSnapshot.val().row,childSnapshot.val().rank );
-                  //         if (cnt==80) {
-                  //           playersRef.update({ turn: 'blue'});
-                  //         }
-                  //       });
-                  //     })
-                  //   );
-                  // }
+                  tokensRef.child(dst.id).update({ color: org.color, rank: org.rank });
                   // update origin with empty
                   tokensRef.child(org.id).update({ color: 'none', rank: 'empty' });
+                  updateTurn = true;
                   break;
                 case 'victory':
                   // swap org and dst
@@ -370,6 +375,9 @@
                   // update origin with empty
                   tokensRef.child(org.id).update({ color: 'none', rank: 'empty' });
                   // move loser to empty space in appropriate tray
+                  updateTurn = true;
+                  moverSurvived = true;
+                  preySurvived = false;
                   discard.discard(dst.color, dst.rank);
                   break;
                 case 'win':
@@ -380,12 +388,18 @@
                   tokensRef.child(org.id).update({ color: 'none', rank: 'empty' });
                   // move loser to empty space in appropriate tray
                   discard.discard(dst.color, dst.rank);
+                  updateTurn = true;
+                  moverSurvived = true;
+                  preySurvived = false;
                   break;
                 case 'defeat':
                   // just place the mover in the tray
                   tokensRef.child(org.id).update({ color: 'none', rank: 'empty' });
                   // move loser to empty space in appropriate tray
                   discard.discard(org.color, org.rank);
+                  updateTurn = true;
+                  moverSurvived = false;
+                  preySurvived = true;
                   break;
                 case 'double defeat':
                   // move org and dst to tray, replace with empties
@@ -399,9 +413,24 @@
                   tokensRef.child(dst.id).update({ color: 'none', rank: 'empty' });
                   // move loser to empty space in appropriate tray
                   discard.discard(org.color, org.rank);
-                  res.json({ message: moveResult });
+                  updateTurn = true;
+                  moverSurvived = false;
+                  preySurvived = false;
                   break;
                 default:
+              }
+              console.log('player data');
+              console.log(org.row,org.col,dst.row,dst.col,org.color,org.rank, moverSurvived,preySurvived);
+              if (snapshot.val() == 'blue') {
+                playersRef.update({ turn: 'red', lastOrg: { row: org.row, col: org.col },
+                  lastDst: { row: dst.row, col: dst.col }, lastMover: { color: org.color, rank: org.rank },
+                   lastMoverSurvived: moverSurvived, lastPreySurvived: preySurvived });
+              } else if (snapshot.val() == 'red') {
+                playersRef.update({ turn: 'blue', lastOrg: { row: org.row, col: org.col },
+                  lastDst: { row: dst.row, col: dst.col }, lastMover: { color: org.color, rank: org.rank },
+                   lastMoverSurvived: moverSurvived, lastPreySurvived: preySurvived });
+              } else {
+                console.log('turn error');
               }
             }); // end get id of the prey
 

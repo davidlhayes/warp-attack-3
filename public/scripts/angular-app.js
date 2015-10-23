@@ -41,7 +41,7 @@
 
       tokenFactory.setRedTray = function() {
         // set both to make sure nothing is missed-temp
-        var data = $http.put(tokenSetTraysUrl);
+        var data = $http.put(tokenSetRedTrayUrl);
         return data;
       }
 
@@ -52,7 +52,7 @@
 
       tokenFactory.setBlueTray = function() {
         // set both to make sure nothing is missed-temp
-        var data = $http.put(tokenSetTraysUrl);
+        var data = $http.put(tokenSetBlueTrayUrl);
         return data;
       }
 
@@ -62,6 +62,7 @@
       }
 
       tokenFactory.setTrays = function() {
+        console.log('angular app setTrays');
         var data = $http.put(tokenSetTraysUrl);
         return data;
       }
@@ -146,11 +147,9 @@
       playersRef.on('child_changed', function(childSnapshot, prevChildKey) {
         console.log('There has been a playersRef change');
       });
-
+      // if I'm logging in, make sure my pieces are in the tray.
       playersRef.on('value', function(snapshot) {
         console.log('players child changed');
-        if (snapshot.val().red = true && !lastRed) $scope.setRedTray();
-        if (snapshot.val().blue = true && !lastBlue) $scope.setBlueTray();
         $scope.turn = snapshot.val().turn;
         $scope.redPresent = snapshot.val().red;
         $scope.bluePresent = snapshot.val().blue;
@@ -177,11 +176,13 @@
         }
         if ($scope.turn == 'setup') {
           $scope.moveMessage = 'waiting for players to finish setting up tokens';
+        } else if ($scope.moveMessage == 'waiting for players to finish setting up tokens') {
+          $scope.moveMessage = 'waiting for ' + $scope.turn + ' to make a move.';
         } else {
-          $scope.moveMessage = 'It\'s ' + $scope.turn + ' turn. Last move was from'
+          $scope.moveMessage = 'It\'s ' + $scope.turn + '\'s turn. Last move was from'
           + ' row ' + row0 + ', col ' + col0 + ' to row ' + row1 + ', col ' + col1;
         }
-        if (lastMover.color != 'none' && astPrey.color != 'none') {
+        if (lastMover.color != 'none' && lastPrey.color != 'none') {
           if (lastMoverSurvived && !lastPreySurvived) {
             verb = ' took out ';
           } else if (!lastMoverSurvived && lastPreySurvived) {
@@ -215,7 +216,7 @@
             console.log(redFactory);
           }
 
-      /*  console.log('Turn: ' + $scope.turn);
+        console.log('Turn: ' + $scope.turn);
         console.log('Red logged in: ' + $scope.redPresence);
         console.log('Blue logged in: ' + $scope.bluePresence);
         console.log('Last Moved from: ' + lastOrg.row + ':' + lastOrg.col);
@@ -223,19 +224,8 @@
         console.log('Last Mover: ' + lastMover.color + ' ' + lastMover.rank);
         console.log('Last Prey: ' + lastPrey.color + ' ' + lastPrey.rank);
         console.log('lastMoverSurvived:' + lastMoverSurvived);
-        console.log('lastPreySurvived:' + lastPreySurvived); */
+        console.log('lastPreySurvived:' + lastPreySurvived);
     });
-
-      // setInterval(function(){
-      //   showBoard();
-        // $scope.getTurn();
-      // $scope.loggedIn = true;
-
-      //   // console.log('BoardCtrl logged in: ' + loggedIn );
-      // }, 1500);
-
-
-      // };
 
       $scope.moveToken = function() {
         console.log('welcome to moveToken');
@@ -276,10 +266,12 @@
       }
 
       $scope.setRedField = function() {
+        console.log('setRedField');
         tokenFactory.setRedField();
       }
 
       $scope.setBlueField = function() {
+        console.log('setBlueField');
         tokenFactory.setBlueField();
       }
 

@@ -50,28 +50,25 @@
       // check for obstructions if this is long trip
       if (spc > 1) {
         // column move
+        console.log('same row ' + org.row,dst.row);
         if (org.row != dst.row) {
           if (Math.abs(dst.row-org.row) > 1) {
             if (dst.row > org.row) {
-              maxBnd = dst.row;
-              minBnd = org.row;
+              maxBnd = parseInt(dst.row);
+              minBnd = parseInt(org.row);
             } else {
-              maxBnd = org.row;
-              minBnd = dst.row;
+              maxBnd = parseInt(org.row);
+              minBnd = parseInt(dst.row);
             }
             // query the database for a non-empty cell in the patch
-            tokensRef.on('value', function(snapshot) {
-              snapshot.orderByChild('row').startAt(minBnd).endAt(maxBnd).once('value',
-                function(childSnapshot) {
-                  console.log('move 9');
-                  consoel.log(childSnapshot.val());
-                  // for (var key in childSnapshot.val()) {
-                  //   if (childsnapshot.val()[key].col==org.col && childsnaphot.val()[key].rank != 'empty') {
-                  //     return 'blocked move';
-                  //   }
-                  // }
-                });
+            tokensRef.on("value", function(snapshot) {
+              snapshot.forEach(function(childSnapshot) {
+                if (childSnapshot.val().col==org.col&&
+                  childSnapshot.val().row>minBnd && childSnapshot.val().row<maxBnd) {
+                    if (childSnapshot.val().rank != 'empty') return 'move is blocked';
+                }
               });
+            });
             }
           }
           // row move
@@ -83,20 +80,19 @@
             } else {
               maxBnd = org.col;
               minBnd = dst.col;
-            } are
+            }
             // query the database for a non-empty cell in the patch
-            tokensRef.on('value', function(snapshot) {
-              snapshot.orderByChild('col').startAt(minBnd).endAt(maxBnd).once('value',
-                function(childSnapshot) {
-                  for (var key in childSnapshot.val()) {
-                    if (childsnapshot.val()[key].row==org.row && childsnaphot.val()[key].rank != 'empty') {
-                      return 'blocked move';
-                    }
-                  }
+            tokensRef.on("value", function(snapshot) {
+              snapshot.forEach(function(childSnapshot) {
+                if (childSnapshot.val().row==org.row&&
+                  childSnapshot.val().col>minBnd && childSnapshot.val().col<maxBnd) {
+                    if (childSnapshot.val().rank != 'empty') return 'move is blocked';
+                }
               });
             });
           }
-        }// if not returned, that means move is allowed
+        } // if not returned yet, that means move is allowed
+
       // check if empty destination
       if (dst.rank == 'empty') return 'move to empty space';
       // BATTLE!!!
@@ -124,6 +120,6 @@
         return 'defeat';
       }
 
-    } <!-- end checkMove -->
+    } // end checkMove
 
   }

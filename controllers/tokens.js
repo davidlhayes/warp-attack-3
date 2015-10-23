@@ -339,6 +339,7 @@
               }
               moverSurvived = true;
               preySurvived = true;
+              playersRef.update({ moveResult: moveResult });
               switch(moveResult) {
                 case 'same square':
                   updateTurn = false;

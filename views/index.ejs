@@ -31,7 +31,7 @@
 
         <div class="tray-col left">
           <div class="tray battle">
-            <div class="tray-cell cell" ng-class="{active : isActive(space)}" ng-repeat="space in leftTray | orderBy: 'row' | orderBy: 'col' | leftTray"
+            <div class="tray-cell cell" ng-class="{active : isActive(space)}" ng-repeat="space in leftTray | orderBy: rowSortOrder | orderBy: colSortOrder | leftTray"
               id="r{{space.row}}c{{space.col}}"  ng-click="activate(space,$index)">
                <div class="token {{space.color.charAt(0)}}{{space.rank.toString().charAt(0)}}">{{space.rank.toString().charAt(0).toUpperCase()}}</div>
             </div>
@@ -60,7 +60,7 @@
 
         <div class="tray-col">
           <div class="tray battle">
-            <div class="tray-cell cell" ng-class="{active : isActive(space)}" ng-repeat="space in rightTray  | orderBy: 'row' | orderBy: 'col' | rightTray" id="r{{space.row}}c{{space.col}}" ng-click="activate(space,$index)">
+            <div class="tray-cell cell" ng-class="{active : isActive(space)}" ng-repeat="space in rightTray  | orderBy: rowSortOrder | orderBy: colSortOrder | rightTray" id="r{{space.row}}c{{space.col}}" ng-click="activate(space,$index)">
                <div class="token {{space.color.charAt(0)}}{{space.rank.toString().charAt(0)}}">{{space.rank.toString().charAt(0).toUpperCase()}}</div>
             </div>
           </div>

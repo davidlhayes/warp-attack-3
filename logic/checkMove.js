@@ -18,7 +18,7 @@
       console.log('checkmove:' + org.row,org.col,org.color,org.rank,dst.row,dst.col,dst.color,dst.rank);
       if ((org.row == dst.row) && (org.col == dst.col)) return 'same square';
       // can't move onto a star
-      if ((dst.rank == 'star')) return 'forbidden';
+      if (dst.rank == '1-star' || dst.rank == '2-star' || dst.rank == '3-star' || dst.rank == '4-star') return 'forbidden';
       // make sure token to move is a player token and not a flag or mine
       if ((org.rank == 'empty') || (org.rank == 'mine') ||
           (org.rank == 'flag') || (org.rank == 'star')) return 'immovable';

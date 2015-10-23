@@ -162,6 +162,12 @@
         lastPrey = snapshot.val().lastPrey;
         lastMoverSurvived = snapshot.val().lastMoverSurvived;
         lastPreySurvived = snapshot.val().lastPreySurvived;
+        moveResult = snapshot.val().moveResult;
+        if ((moveResult=='forbidden' || moveResult=='immovable'
+         || moveResult=='mover out of bounds' || moveResult=='destination out of bounds'
+         || moveResult=='out of bounds') && $scope.turn==teamColor) {
+           alert(moveResult);
+         }
         //
         if (teamColor == 'blue') {
           col0 = 11 - lastOrg.col;
@@ -174,7 +180,9 @@
           col1 = lastDst.col;
           row1 = lastDst.row;
         }
-        if ($scope.turn == 'setup') {
+        if ($scope.moveResult=='win') {
+          $scope.moveMessage = lastMover.color + ' has won!';
+        } else if ($scope.turn == 'setup') {
           $scope.moveMessage = 'waiting for players to finish setting up tokens';
         } else if ($scope.moveMessage == 'waiting for players to finish setting up tokens') {
           $scope.moveMessage = 'waiting for ' + $scope.turn + ' to make a move.';
@@ -216,15 +224,15 @@
             console.log(redFactory);
           }
 
-        console.log('Turn: ' + $scope.turn);
-        console.log('Red logged in: ' + $scope.redPresence);
-        console.log('Blue logged in: ' + $scope.bluePresence);
-        console.log('Last Moved from: ' + lastOrg.row + ':' + lastOrg.col);
-        console.log('Last Moved to: ' + lastDst.row + ':' + lastDst.col);
-        console.log('Last Mover: ' + lastMover.color + ' ' + lastMover.rank);
-        console.log('Last Prey: ' + lastPrey.color + ' ' + lastPrey.rank);
-        console.log('lastMoverSurvived:' + lastMoverSurvived);
-        console.log('lastPreySurvived:' + lastPreySurvived);
+        // console.log('Turn: ' + $scope.turn);
+        // console.log('Red logged in: ' + $scope.redPresence);
+        // console.log('Blue logged in: ' + $scope.bluePresence);
+        // console.log('Last Moved from: ' + lastOrg.row + ':' + lastOrg.col);
+        // console.log('Last Moved to: ' + lastDst.row + ':' + lastDst.col);
+        // console.log('Last Mover: ' + lastMover.color + ' ' + lastMover.rank);
+        // console.log('Last Prey: ' + lastPrey.color + ' ' + lastPrey.rank);
+        // console.log('lastMoverSurvived:' + lastMoverSurvived);
+        // console.log('lastPreySurvived:' + lastPreySurvived);
     });
 
       $scope.moveToken = function() {
@@ -298,6 +306,7 @@
       }
       $scope.oRow =0;
       $scope.dRow = 0;
+      // token selection and target cell selection
       $scope.activate = function(cell,$index) {
         console.log('cell index: ' + $index);
         if ((activecell.row != 0) && (activecell.col !=0)) {
@@ -316,7 +325,7 @@
                     dstRow: $scope.dRow,
                     dstCol: $scope.dCol})
             tokenFactory.moveToken(data).success(function(res){
-              console.log(res);
+
             });
             console.log($scope.oRow, $scope.dRow, activecell.row, cell.row, 'blue');
           }

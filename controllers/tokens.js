@@ -28,8 +28,6 @@
 
   if (isSetup == null) isSetup=true;
 
-
-
   // watch set to update red and blue versions of the board when cells CHANGE
   tokensRef.on('child_changed', function(childSnapshot) {
     var empties = 0;
@@ -96,7 +94,6 @@
 
 // set empty field and full trays
   controller.put('/trays', function(req, res, next) {
-    console.log('set up trays');
     var length;
     var color;
     var rank;
@@ -255,8 +252,6 @@
   // move Token
   controller.put('/move', function(req, res, next) {
     // pull out arguments
-    console.log('req.body');
-    console.log(req.body);
     var org = {
       row: req.body.orgRow,
       col: req.body.orgCol,
@@ -280,24 +275,9 @@
     var preySurvived;
     var moverSurvived;
 
-    console.log('token.js ' + org.row,org.col,dst.row,dst.col);
-
-
-// this pattern works
-    // var q = tokensRef.orderByChild('row').startAt(org.col).endAt(org.col);
-    // q.once('value',function(s) {
-    //   s.forEach(function(t) {
-    //     console.log(t.key(),t.val().row,t.val().col,t.val().color,t.val().rank);
-    //   });
-    // });
-// this pattern worked
-
-
     // what mode are we in
     playersRef.child('turn').once("value", function(snapshot) {
       isSetup = (snapshot.val()=='setup');
-      console.log('isSetup: ' + isSetup);
-      console.log('playersRef ' + snapshot.val());
 
       // first get the id of the mover
         var qRef1 = tokensRef.orderByChild('row').startAt(org.row).endAt(org.row);
@@ -307,7 +287,6 @@
               org.id = s.key();
               org.color = s.val().color;
               org.rank = s.val().rank;
-              console.log('org: ' + org.id,org.row,org.col,org.color,org.rank);
             }
           });
           // 2nd get the id of the prey
@@ -318,24 +297,15 @@
                   dst.id = t.key();
                   dst.color = t.val().color;
                   dst.rank = t.val().rank;
-                  console.log(t.val().row,t.val().col);
-                  console.log('dst: ' + dst.id,dst.row,dst.col,dst.color,dst.rank);
                 }
               });
               for (var key in dst) {
-                console.log(key,dst[key]);
               }
-              console.log('origin ' + org.row,org.col,org.id,org.color,org.rank);
-              console.log('destination ' + dst.row,dst.col,dst.id,dst.color,dst.rank);
-
+              console.log('prepare to move ' + org.row,org.col,dst.row,dst.col);
               if (isSetup) {
                 moveResult = checkSet.checkSet(org,dst);
               } else {
                 moveResult = checkMove.checkMove(org,dst);
-              }
-              console.log(moveResult)
-              for (var key in dst) {
-                console.log(key,dst[key]);
               }
               moverSurvived = true;
               preySurvived = true;
@@ -361,7 +331,6 @@
                   break;
                 case 'move to empty space':
                   // swap empty with mover
-                  console.log('here ' + dst.id);
                   // update destination with origin specs
                   // might work, but it slows things down. Now going to add a button
                   tokensRef.child(dst.id).update({ color: org.color, rank: org.rank });
@@ -420,17 +389,17 @@
                   break;
                 default:
               }
-              console.log('player data');
-              console.log(org.row,org.col,dst.row,dst.col,org.color,org.rank, moverSurvived,preySurvived);
+              console.log()
               if (snapshot.val() == 'blue') {
                 playersRef.update({ turn: 'red', lastOrg: { row: org.row, col: org.col },
                   lastDst: { row: dst.row, col: dst.col }, lastMover: { color: org.color, rank: org.rank },
+                  lastPrey: { color: dst.color, rank: dst.rank },
                    lastMoverSurvived: moverSurvived, lastPreySurvived: preySurvived });
               } else if (snapshot.val() == 'red') {
                 playersRef.update({ turn: 'blue', lastOrg: { row: org.row, col: org.col },
                   lastDst: { row: dst.row, col: dst.col }, lastMover: { color: org.color, rank: org.rank },
                    lastMoverSurvived: moverSurvived, lastPreySurvived: preySurvived });
-              } else {
+              } else if (snapshot.val() != 'setup') {
                 console.log('turn error');
               }
             }); // end get id of the prey
@@ -443,12 +412,5 @@
 
   }); // end controller.put
 
-  var onComplete = function(error) {
-    if (error) {
-      console.log('Synchronization failed');
-    } else {
-      console.log('Synchronization succeeded');
-    }
-  };
 
   module.exports = controller;

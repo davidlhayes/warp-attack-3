@@ -3,11 +3,9 @@
   <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css">
-    <!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-MfvZlkHCEqatNoGiOXveE8FIwMzZg4W85qfrfIFBfYc= sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous"> -->
     <link rel="stylesheet" href="/stylesheets/main.css" media="screen" title="no title" charset="utf-8">
     <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js"></script>
-    <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha256-Sk3nkD6mLTMOF0EOpNtsIry+s1CsaqQC1rVLTAy+0yc= sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script> -->
     <script type="text/javascript" src="/scripts/angular.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.6/angular-route.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.6/angular-animate.min.js"></script>
@@ -39,9 +37,9 @@
         </div>
 
         <div class="button-col">
-          <button class="vertical" ng-click="setBlueTray()" >RESET</button>
-          <button class="vertical" ng-click="setBlueField()" >QUICK SET</button>
-          <button class="vertical" ng-click="startGameBlue()" >START GAME</button>
+          <button ng-class="blueButtons()" ng-click="setBlueTray()" >RESET</button>
+          <button ng-class="blueButtons()" ng-click="setBlueField()" >QUICK SET</button>
+          <button ng-class="blueButtons()" ng-click="startGameBlue()" >START GAME</button>
         </div>
 
         <div class="board-col">
@@ -53,9 +51,9 @@
         </div>
 
         <div class="button-col">
-          <button class="vertical" ng-click="setRedTray()" >RESET</button>
-          <button class="vertical" ng-click="setRedField()" >QUICK SET</button>
-          <button class="vertical" ng-click="startGameRed()" >START GAME</button>
+          <button ng-class="redButtons()" ng-click="setRedTray()" >RESET</button>
+          <button ng-class="redButtons()" ng-click="setRedField()" >QUICK SET</button>
+          <button ng-class="redButtons()" ng-click="startGameRed()" >START GAME</button>
         </div>
 
         <div class="tray-col">
@@ -71,19 +69,6 @@
 
 
       </div> <!-- end board row -->
-
-      <!-- <div class="winner-circle" ng-show=win>
-        <div class="row-win">
-          <div class="win-col">
-            <div class="{{winner}}"></div>
-          </div>
-          <div class="win-col">
-            <div id="middle-win">{{verb}}</div>
-          </div>
-          <div class="win-col">
-            <div class="{{loser}}"></div>
-          </div>
-        </div> -->
 
       <div class="login" ng-hide=loggedIn ng-controller="PlayerCtrl">
         <div class="row flags">

@@ -14,9 +14,6 @@
   angular.module('warpApp')
     .factory('tokenFactory', ['$http', '$firebaseObject', function($http,$firebaseObject) {
       var tokenUrl = '/tokens/';
-      // var tokenRedUrl = '/tokens/red';
-      // var tokenBlueUrl ='/tokens/blue';
-
       var tokenSetTraysUrl = '/tokens/trays';
       var tokenSetRedTrayUrl = '/tokens/redtray';
       var tokenSetRedFieldUrl = '/tokens/redfield';
@@ -26,7 +23,6 @@
       var playerTurnUrl = '/players/turn';
 
       var tokenFactory = { };
-
 
       tokenFactory.getRedTokens = function() {
         var data = $firebaseObject(tokRedRef);
@@ -66,17 +62,14 @@
         var data = $http.put(tokenSetTraysUrl);
         return data;
       }
-      // currently not implemented
-      tokenFactory.moveToken = function(move) {
-        console.log(move);
-        var data = $http({
-          method: 'PUT',
-          url: tokenMoveTokenUrl,
-          data: move,
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-          });
-          console.log(data);
 
+      tokenFactory.moveToken = function(move) {
+      var data = $http({
+        method: 'PUT',
+        url: tokenMoveTokenUrl,
+        data: move,
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+        });
         return data;
       }
 
@@ -141,7 +134,7 @@
       var row0;
       var col1;
       var row1;
-      var activecell = { row: 0, col: 0};
+      var activeCell = { row: 0, col: 0};
       var verb;
 
       playersRef.on('child_changed', function(childSnapshot, prevChildKey) {
@@ -162,12 +155,7 @@
         lastPrey = snapshot.val().lastPrey;
         lastMoverSurvived = snapshot.val().lastMoverSurvived;
         lastPreySurvived = snapshot.val().lastPreySurvived;
-        moveResult = snapshot.val().moveResult;
-        if ((moveResult=='forbidden' || moveResult=='immovable'
-         || moveResult=='mover out of bounds' || moveResult=='destination out of bounds'
-         || moveResult=='out of bounds') && $scope.turn==teamColor) {
-           alert(moveResult);
-         }
+
         //
         if (teamColor == 'blue') {
           col0 = 11 - lastOrg.col;
@@ -224,19 +212,9 @@
             console.log(redFactory);
           }
 
-        // console.log('Turn: ' + $scope.turn);
-        // console.log('Red logged in: ' + $scope.redPresence);
-        // console.log('Blue logged in: ' + $scope.bluePresence);
-        // console.log('Last Moved from: ' + lastOrg.row + ':' + lastOrg.col);
-        // console.log('Last Moved to: ' + lastDst.row + ':' + lastDst.col);
-        // console.log('Last Mover: ' + lastMover.color + ' ' + lastMover.rank);
-        // console.log('Last Prey: ' + lastPrey.color + ' ' + lastPrey.rank);
-        // console.log('lastMoverSurvived:' + lastMoverSurvived);
-        // console.log('lastPreySurvived:' + lastPreySurvived);
     });
 
       $scope.moveToken = function() {
-        console.log('welcome to moveToken');
 
         if (teamColor=='blue') {
           if (oRow < 11) {
@@ -266,31 +244,55 @@
       }
  
       $scope.setRedTray = function() {
-        tokenFactory.setRedTray();
+        if (teamColor=='red') {
+          tokenFactory.setRedTray();
+        }
       }
 
       $scope.setBlueTray = function() {
-        tokenFactory.setBlueTray();
+        if (teamColor=='blue') {
+          tokenFactory.setBlueTray();
+        }
       }
 
       $scope.setRedField = function() {
-        console.log('setRedField');
-        tokenFactory.setRedField();
+        if (teamColor=='red') {
+          tokenFactory.setRedField();
+        }
       }
 
       $scope.setBlueField = function() {
-        console.log('setBlueField');
-        tokenFactory.setBlueField();
+        if (teamColor=='blue') {
+          tokenFactory.setBlueField();
+        }
       }
 
       $scope.startGameRed = function() {
-        console.log('start game Red');
-        playersRef.update({ turn: 'red' });
+        if (teamColor=='red') {
+          playersRef.update({ turn: 'red' });
+        }
       }
 
       $scope.startGameBlue = function() {
-        console.log('start game Blue');
-        playersRef.update({ turn: 'blue' });
+        if (teamColor=='blue') {
+          playersRef.update({ turn: 'blue' });
+        }
+      }
+
+      $scope.redButtons = function() {
+        if (teamColor=='red') {
+          return 'vertical';
+        } else {
+          return 'vertical dark';
+        }
+      }
+
+      $scope.blueButtons = function() {
+        if (teamColor=='blue') {
+          return 'vertical';
+        } else {
+          return 'vertical dark';
+        }
       }
 
       $scope.setTrays = function() {
@@ -298,100 +300,84 @@
       }
 
       $scope.isActive = function(cell) {
-        if ((cell.row==activecell.row)
-         &&((cell.col==activecell.col)))
+        if ((cell.row==activeCell.row)
+         &&((cell.col==activeCell.col)))
          {
           return true;
         }
       }
+
       $scope.oRow =0;
       $scope.dRow = 0;
       // token selection and target cell selection
       $scope.activate = function(cell,$index) {
         console.log('cell index: ' + $index);
-        if ((activecell.row != 0) && (activecell.col !=0)) {
-          if (teamColor=='blue') {
+        if ($scope.turn=='setup' || $scope.turn==teamColor) {
+          if ((activeCell.row != 0) && (activeCell.col !=0)) {
+            // click an active cell again to de-activate it
+            if (cell.row==activeCell.row && cell.col==activeCell.col) {
+              activeCell.row = 0;
+              activeCell.col = 0;
+            } else if (teamColor=='blue') {
+              // translate for blue inside field
+              console.log('blue status: ' + activeCell.row, activeCell.col, cell.row, cell.col);
+              if (activeCell.row < 11) {
+                $scope.oRow = 11-parseInt(activeCell.row);
+                $scope.oCol = 11-parseInt(activeCell.col);
+              } else {
+                $scope.oRow = parseInt(activeCell.row);
+                $scope.oCol = parseInt(activeCell.col);
+              }
+              // translate for blue inside the field
+              if ($scope.dRow < 11) {
+                $scope.dRow = 11-cell.row;
+                $scope.dCol = 11-cell.col;
+              } else {
+                $scope.dRow = cell.row;
+                $scope.dCol = cell.row;
+              }
+              console.log('blue status after translate: ' + $scope.oRow, $scope.oCol, $scope.dRow, $scope.dCol);
+              var data = $.param({
+                      orgRow: $scope.oRow,
+                      orgCol: $scope.oCol,
+                      dstRow: $scope.dRow,
+                      dstCol: $scope.dCol})
+              tokenFactory.moveToken(data).success(function(){
+                // de-activate cell after move
+                activeCell.row = 0;
+                activeCell.col = 0;
+                playersRef.update({ })
+              });
+              console.log($scope.oRow, $scope.oCol, $scope.dRow, $scope.dCol, 'blue');
+            } else if (teamColor=='red'){
+              $scope.oRow = activeCell.row;
+              $scope.oCol = activeCell.col;
+              $scope.dRow = cell.row;
+              $scope.dCol = cell.col;
 
-            if ($scope.oRow < 11) {
-              $scope.oRow = 11-activecell.row;
-              $scope.oCol = 11-activecell.col;
-
-            if ($scope.dRow < 11) {
-              $scope.dRow = 11-cell.row;
-              $scope.dCol = 11-cell.col;
-            var data = $.param({
-                    orgRow: $scope.oRow,
-                    orgCol: $scope.oCol,
-                    dstRow: $scope.dRow,
-                    dstCol: $scope.dCol})
-            tokenFactory.moveToken(data).success(function(res){
-
-            });
-            console.log($scope.oRow, $scope.dRow, activecell.row, cell.row, 'blue');
-          }
-
-          }
+              var data = $.param({
+                      orgRow: $scope.oRow,
+                      orgCol: $scope.oCol,
+                      dstRow: $scope.dRow,
+                      dstCol: $scope.dCol})
+                      console.log('Move data ' + $scope.oRow,$scope.oCol,$scope.dRow,$scope.dCol);
+              tokenFactory.moveToken(data).success(function(){
+                // de-activate cell after move
+                activeCell.row = 0;
+                activeCell.col = 0;
+              });
+            }
           } else {
-            $scope.oRow = activecell.row;
-            $scope.oCol = activecell.col;
-            $scope.dRow = cell.row;
-            $scope.dCol = cell.col;
-
-            var data = $.param({
-                    orgRow: $scope.oRow,
-                    orgCol: $scope.oCol,
-                    dstRow: $scope.dRow,
-                    dstCol: $scope.dCol})
-                    console.log('Move data ' + $scope.oRow,$scope.oCol,$scope.dRow,$scope.dCol);
-            tokenFactory.moveToken(data).success(function(){
-              console.log('hey');
-            });
-          console.log($scope.oRow, $scope.dRow, 'red');
+            activeCell.row = cell.row;
+            activeCell.col = cell.col;
           }
-              activecell.row = 0;
-              activecell.col = 0;
-        } else {
-          console.log(cell.row, cell.col);
-          activecell.row = cell.row;
-          activecell.col = cell.col;
         }
       }
-
   }]);
 
   angular.module('warpApp')
     .factory('statusService', [ '$http', '$q', function($http, $q) {
       return {
-        // getMovement: function(){
-        //   $http.get('/players/movement').success(function(data) {
-        //     if (error) return error;
-        //     lastMovement = data.movement;
-        //   });
-        //   return lastMovement;
-        // },
-        // getRedPresence: function(){
-        //   var redPresent = false;
-        //   var defered = $q.defer();
-        //   $http.get('/players/redpresent').then(function(resp) {
-        //     redPresent = resp.data;
-        //     defered.resolve(redPresent);
-        //     // return redPresent;
-        //   }, function(error) {
-        //     return defered.reject();
-        //   });
-        //   return defered.promise;
-        // },
-        // getBluePresence: function(){
-        //   var bluePresent = false;
-        //   var defered = $q.defer();
-        //   $http.get('/players/bluepresent').then(function(resp) {
-        //     bluePresent = resp.data;
-        //     defered.resolve(bluePresent);
-        //   }, function(error) {
-        //     return defered.reject();
-        //   });
-        //   return defered.promise;
-        // },
         setRedPresence: function() {
           playersRef.update({ red: true });
         },
@@ -418,28 +404,6 @@
           return res.data.turn;
         })
       };
-
-      // statusService.getRedPresence().then(function(resp) {
-      //   console.log(resp.redpresent, 'red');
-      //   $scope.redpresent = resp.redpresent;
-      // }, function(error) {
-      //   console.log(error);
-      // })
-      // var x = {};
-      // function xs(args) {
-      //   $timeout(function() {
-      //     console.log(args);
-      //   })
-      // }
-
-      // statusService.getBluePresence().then(function(resp) {
-      //   x = resp.bluepresent
-      //   xs(x);
-      //   console.log(resp.bluepresent, 'blue');
-      //   $scope.bluepresent = resp.bluepresent;
-      // }, function(error) {
-      //   console.log(error);
-      // })
 
       $scope.showMoveStatus = function() {
         $scope.movement = statusService.getMovement();

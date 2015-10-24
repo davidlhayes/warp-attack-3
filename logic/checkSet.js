@@ -9,7 +9,7 @@ module.exports =
     if ((org.row == dst.row) && (org.col == dst.col)) return 'same space';
     // are coords within the appropriate staging area or tray (blue)
     if (org.color == 'blue') {
-      if ((dst.row < 5) || (dst.row > 10) && (dst.row < 15)) {
+      if ((dst.row > 6) || (dst.row > 10 && dst.row < 15)) {
         return 'out of bounds';
         // make sure we're trying to move into an empty cell
       } else if (dst.rank != 'empty') {

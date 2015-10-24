@@ -3,8 +3,8 @@
 @titleColor: rgb(240,207,61);
 @messageFont: 'Courier', sans-serif;
 @messageFontSize: 10px;
-@buttonColor: rgba(118, 125, 117, 1);
-@buttonFontColor: rgba(255,255,255, 1);
+@buttonColor: rgba(19, 237, 251, 1);
+@buttonFontColor: rgba(47, 159, 170, 1);
 @buttonFont: 'Arial Black', sans-serif;
 @setButtonFontSize: 8px;
 @boardGridColor: rgba(74, 255, 0, 1);
@@ -14,6 +14,7 @@
 @invisible: rgba(255,255,255,0);
 @alertFontColor: rgba(0, 255, 224, 1);
 @cellHighlightColor: rgba(255,255,255,.8);
+@cellSetupColor: rgba(244, 249, 240, 0.53);
 
 // Bootstrap replacements
 * {
@@ -63,6 +64,9 @@ body {
   font-family: @buttonFont;
   font-size: @setButtonFontSize;
   color: @buttonFontColor;
+}
+.dark {
+  background-color: darken(@buttonColor, 40%);
 }
 .vertical:first-child {
   margin-top: 150px;
@@ -154,6 +158,9 @@ h1 {
 }
 .active {
   background-color: @cellHighlightColor;
+}
+.setup {
+  background-color: @cellSetupColor;
 }
 // flags for login-screen
 #blue-flag {
